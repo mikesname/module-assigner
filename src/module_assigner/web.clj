@@ -1,4 +1,5 @@
 ;; For Heroku deployment
+;; https://module-assigner.herokuapp.com/
 
 (ns module-assigner.web
   (:require [module-assigner.handler :refer :all]
