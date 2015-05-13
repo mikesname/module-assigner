@@ -40,6 +40,11 @@
 (def test-preferences [
                        ])
 
+(def test-assignments [
+    (->Assignment module-xml student-1 0 0)
+    (->Assignment module-xml student-2 0 0)
+                       ])
+
 (deftest test-assigner
   (testing "Assignment"
     (is (= [] (assign test-modules test-preferences 10 4)))))
@@ -54,18 +59,28 @@
 
 (deftest test-module-count
   (testing "Module count"
-    (is (= 2 (module-count [
-                              (->Assignment module-xml student-1 0 0)
-                              (->Assignment module-xml student-2 0 0)
-                              ] module-xml)))))
+    (is (= 2 (module-count test-assignments module-xml)))))
 
 (deftest test-by-modules
   (testing "Assignments by modules"
     (is (= {module-xml #{student-1}} (by-modules [(->Assignment module-xml student-1 0 0)])))
-    (is (= {module-xml #{student-1 student-2}} (by-modules [
-                                                            (->Assignment module-xml student-1 0 0)
-                                                            (->Assignment module-xml student-2 0 0)
-                                                            ])))))
+    (is (= {module-xml #{student-1 student-2}} (by-modules test-assignments)))))
+
+(deftest test-move-candidates
+  (testing "Move candidates"
+    (is (= [] (move-candidates test-assignments)))
+    (let [bad-assignments [
+                           ;; the order here is intentional. Student 5 is
+                           ;; not on the same course as module-xml so is
+                           ;; a higher priority move candiate the students
+                           ;; 1-4.
+                          (->Assignment module-xml student-5 0 0)
+                          (->Assignment module-xml student-4 0 0)
+                          (->Assignment module-xml student-3 0 0)
+                          (->Assignment module-xml student-2 0 0)
+                          (->Assignment module-xml student-1 0 0) ;; more than cap
+                           ]]
+      (is (= bad-assignments (move-candidates bad-assignments))))))
 
 (deftest test-is-favoured
   (testing "Favoured modules"
