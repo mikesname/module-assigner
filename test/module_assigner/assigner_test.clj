@@ -1,60 +1,75 @@
 (ns module-assigner.assigner-test
-  (:require [clojure.test :refer :all]
-            [module-assigner.assigner :refer :all]))
+  (:require [clojure.test :refer :all])
+  (:use module-assigner.assigner))
 
-(def test-modules '[
-  (->Module 1   "DH"  1 "DH-C1"    "Introduction to Python programming")
-  (->Module 2   "DH"  1 "DH-C2"    "Introduction to XSLT")
-  (->Module 3   "DAM" 1 "DAM-C5"   "Metadata")
-  (->Module 4   "DAM" 1 "DAM-C6"   "Clouds and Crowds")
-  (->Module 5   "DCS" 1 "DCS-C9"   "Digital Culture and Video Games")
-  (->Module 6   "DCS" 1 "DCS-C10"  "Digital Culture and Politics")
-  (->Module 7   "DH"  2 "DH-C3"    "Digital Editions")
-  (->Module 8   "DH"  2 "DH-C4"    "Databases and Linked Data")
-  (->Module 9   "DAM" 2 "DAM-C7"   "Big Data")
-  (->Module 10  "DAM" 2 "DAM-C8"   "Digital Curation")
-  (->Module 11  "DCS" 2 "DCS-C11"  "Digital Culture and Gender")
-  (->Module 12  "DCS" 2 "DCS-C12"  "Digital Culture and Law")])                   
+;; Courses
+(def course-dh (->Course "DH"))
+(def course-dam (->Course "DAM"))
 
-(def test-preferences '[
-  (->Preference 10001 "Anastas Pasternack"  "DH"  1 2 3 4 7 8 9 10)
-  (->Preference 10002 "Angus Bonner"        "DH"  1 2 3 4 7 8 9 10)
-  (->Preference 10003 "Augustine Little"    "DH"  1 2 3 4 7 8 9 10)
-  (->Preference 10004 "Bao Pan"             "DH"  1 2 3 4 7 8 9 10)
-  (->Preference 10005 "Briar Harvey"        "DH"  1 2 3 4 7 8 9 10)
-  (->Preference 10006 "Bristol Colbert"     "DH"  1 2 3 4 7 8 9 10)
-  (->Preference 10007 "Clematis Badcoke"    "DH"  1 2 3 4 7 8 9 10)
-  (->Preference 10008 "Edie Styles"         "DH"  1 2 3 4 7 8 9 10)
-  (->Preference 10009 "Flo Stevens"         "DH"  1 2 3 4 7 8 9 10)
-  (->Preference 10010 "Guy Sappington"      "DH"  1 2 3 4 7 8 9 10)
-  (->Preference 10011 "Gwilim Battle"       "DH"  1 2 3 4 7 8 9 10)
-  (->Preference 10012 "Hector Hobson"       "DH"  1 2 3 4 7 8 9 10)
-  (->Preference 10013 "Jerrod Garrod"       "DH"  1 2 3 4 7 8 9 10)
-  (->Preference 10014 "Kemp Layton"         "DH"  1 2 3 4 7 8 9 10)
-  (->Preference 10015 "Kolya Filipov"       "DH"  1 2 3 4 7 8 9 10)
-  (->Preference 10016 "Kun Du"              "DH"  1 2 3 4 7 8 9 10)
-  (->Preference 10017 "Lecia Lewis"         "DH"  1 2 3 4 7 8 9 10)
-  (->Preference 10018 "Maura Hargrave"      "DH"  1 2 3 4 7 8 9 10)
-  (->Preference 10019 "Merilyn Frost"       "DH"  1 2 3 4 7 8 9 10)
-  (->Preference 10020 "Natalee Lum"         "DH"  1 2 3 4 7 8 9 10)
-  (->Preference 10021 "Nonna Filipov"       "DH"  1 2 3 4 7 8 9 10)
-  (->Preference 10022 "Oleg Utkin"          "DH"  1 2 3 4 7 8 9 10)
-  (->Preference 10023 "Rosalind Bryant"     "DH"  1 2 3 4 7 8 9 10)
-  (->Preference 10024 "Sharron Martinson"   "DH"  1 2 3 4 7 8 9 10)
-  (->Preference 10025 "Shi Zhou"            "DH"  1 2 3 4 7 8 9 10)
-  (->Preference 10026 "Tsetsiliya Romanov"  "DH"  1 2 3 4 7 8 9 10)
-  (->Preference 10027 "Uliana Yakovlev"     "DH"  1 2 3 4 7 8 9 10)
-  (->Preference 10028 "Wade Robinson"       "DH"  1 2 3 4 7 8 9 10)
-  (->Preference 10029 "Wallis Woodward"     "DH"  1 2 3 4 7 8 9 10)
-  (->Preference 10030 "Wright Kitchens"     "DH"  1 2 3 4 7 8 9 10)
-  (->Preference 10031 "Xun Lam"             "DH"  1 2 3 4 7 8 9 10)
-  (->Preference 10032 "Zane Smedley"        "DH"  1 2 3 4 7 8 9 10)
-  (->Preference 10033 "Zhen Bai"            "DH"  1 2 3 4 7 8 9 10)
-  (->Preference 10034 "Zheng Lim"           "DH"  1 2 3 4 7 8 9 10)
-  (->Preference 10035 "Zhi Wu"              "DH"  1 2 3 4 7 8 9 10)
-  (->Preference 10036 "Zina Orlov"          "DH"  1 2 3 4 7 8 9 10)])
+;; Students
+(def student-1 (->Student 1 "Bob" course-dh))
+(def student-2 (->Student 2 "Jane" course-dh))
+(def student-3 (->Student 3 "Fred" course-dh))
+(def student-4 (->Student 4 "Sue" course-dh))
+(def student-5 (->Student 5 "Mark" course-dam))
+(def student-6 (->Student 6 "Linda" course-dam))
+(def student-7 (->Student 7 "David" course-dam))
+(def student-8 (->Student 8 "Laura" course-dam))
+
+(def test-students [
+  student-1
+  student-2
+  student-3
+  student-4
+  student-5
+  student-6
+  student-7
+  student-8])
+
+(def module-xml (->Module 1 "XML"  course-dh))
+(def module-python (->Module 2 "Python"  course-dh))
+(def module-metadata (->Module 3 "Metadata"  course-dam))
+(def module-digipres (->Module 4 "DigiPres"  course-dam))
+
+(def test-modules [
+  module-xml
+  module-python
+  module-metadata
+  module-digipres]) 
+
+(def test-preferences [
+                       ])
 
 (deftest test-assigner
   (testing "Assignment"
     (is (= [] (assign test-modules test-preferences 10 4)))))
+
+(deftest test-get-course
+  (testing "Get course"
+    (is (= course-dh (get-in student-1 [:course])))))
+
+(deftest test-by-modules-empty
+  (testing "Assignments by modules"
+    (is (= {} (by-modules [])))))
+
+(deftest test-module-count
+  (testing "Module count"
+    (is (= 2 (module-count [
+                              (->Assignment module-xml student-1 0 0)
+                              (->Assignment module-xml student-2 0 0)
+                              ] module-xml)))))
+
+(deftest test-by-modules
+  (testing "Assignments by modules"
+    (is (= {module-xml #{student-1}} (by-modules [(->Assignment module-xml student-1 0 0)])))
+    (is (= {module-xml #{student-1 student-2}} (by-modules [
+                                                            (->Assignment module-xml student-1 0 0)
+                                                            (->Assignment module-xml student-2 0 0)
+                                                            ])))))
+
+(deftest test-is-favoured
+  (testing "Favoured modules"
+    (is (= true (is-favoured (->Assignment module-xml student-1 0, 0))))
+    (is (= false (is-favoured (->Assignment module-metadata student-1 0, 0))))))
+
 

@@ -1,16 +1,37 @@
 (ns module-assigner.assigner)
 
+(defrecord Course [name])
+
 ;; A record representing a module to which a student can be assigned
-(defrecord Module 
-  [num course term code name])
+(defrecord Module [id name course])
 
-;; A record representing a student's preferences for term1 and term2 modules
-(defrecord Preference 
-  [sid name course t1-p1 t1-p2 t1-p3 t1-p4 t2-p1 t2-p2 t2-p3 t2-p4])
+(defrecord Student [id name course])
 
-;; A record representing a student's term1 and term2 assignments
-(defrecord Assignment 
-  [sid name t1-a1 t1-a2 t2-a1 t2-a2]) 
+(defrecord Assignment
+  [module student choice try])
+
+
+(defn is-favoured [assignment]
+  (= 
+    (get-in assignment [:module :course])
+    (get-in assignment [:student :course])))
+
+(defn by-modules [assignments]
+  "turn a list of assignments into a map of module -> set(students)"
+  (reduce
+    (fn [m assignment]
+      (let [module (:module assignment) student (:student assignment)]
+        (let [sset (if (contains? m module)
+                     (conj (get m module) student)
+                     #{student})]
+          (assoc m module sset))))
+    {}
+    assignments))
+
+(defn module-count [assignments module]
+  "count the number of students in a module"
+  (count (get (by-modules assignments) module)))
+
 
 (defn assign 
   "Given the available modules, a student preferences and the maximum
