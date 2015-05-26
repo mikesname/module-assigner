@@ -1,7 +1,7 @@
 (ns module-assigner.assigner)
 
 (def module-cap 4)
-(def module-count 2)
+(def modules-per-student 2)
 (def max-tries 200)
 
 (defrecord Course [name])
@@ -99,10 +99,30 @@
        ]
     (conj remassignments reassignment)))
 
+(defn is-solved [assignments]
+  (= 0 (count (over-cap-assignments assignments))))
 
+(defn move-step [assignments preferences]
+  "make one reassignment"
+  (let [[assign modpref] (reassign assignments preferences)]
+    (move-student assignments preferences assign modpref)))
 
-(defn assign
-  "Given the available modules, a student preferences and the maximum
+(defn solve [assignments preferences iteration]
+  "attempt to solve over-cap preferences"
+  (if (> iteration 200)
+    (throw (Exception. "Over 200 iterations!"))
+    (if (is-solved assignments)
+      assignments
+      (solve (move-step assignments preferences) preferences (inc iteration)))))
+
+(defn- prefs-to-initial-assignment [pref]
+  """given the module count per student, generate a set of 
+     initial assignments."""
+  (let [student (:student pref) modules (:modules pref)]
+    (map-indexed (fn [i,m] (->Assignment m student i 0)) (take modules-per-student modules))))
+
+(defn assign-initial [preferences]
+  "Given a set of student preferences and the maximum
   and minimum students per module, generate a set of student assignments"
-  [modules prefs module-max module-min]
-  [])
+  (flatten (into [] (map prefs-to-initial-assignment preferences))))
+

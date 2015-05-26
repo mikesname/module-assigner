@@ -52,10 +52,6 @@
     (->Assignment module-xml student-2 0 0)
                        ])
 
-(deftest test-assigner
-  (testing "Assignment"
-    (is (= [] (assign test-modules test-preferences 10 4)))))
-
 (deftest test-get-course
   (testing "Get course"
     (is (= course-dh (get-in student-1 [:course])))))
@@ -161,4 +157,29 @@
         (is (= 5 (count newassignments)))
         (is (= assign (last newassignments)))
         )))))
+
+(deftest test-solve
+  (testing "Solve"
+    (let [
+         a1 (->Assignment module-xml student-1 0 0)
+         a2 (->Assignment module-xml student-2 0 0)
+         a3 (->Assignment module-xml student-3 0 0)
+         a4 (->Assignment module-xml student-4 0 0)
+         a5 (->Assignment module-xml student-5 0 0)
+         p1 (->Preference student-1 [module-xml module-python])
+         p2 (->Preference student-2 [module-xml module-python])
+         p3 (->Preference student-3 [module-xml module-python])
+         p4 (->Preference student-4 [module-xml module-python])
+         p5 (->Preference student-5 [module-xml module-python])
+          ]
+    (let [solution (solve [a1 a2 a3 a4 a5] [p1 p2 p3 p4 p5] 0)]
+      (is (= 5 (count solution)))))))
+
+(deftest test-assign-initial
+  (testing "Assignment"
+    (is (= [
+            (->Assignment module-xml student-1 0 0)
+            (->Assignment module-python student-1 1 0)
+            ] (assign-initial [(->Preference student-1 [module-xml module-python])])))))
+
 
