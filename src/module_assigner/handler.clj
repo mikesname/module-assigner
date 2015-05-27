@@ -2,8 +2,7 @@
   (:require [compojure.core :refer :all]
             [compojure.route :as route]
             [ring.middleware.defaults :refer [wrap-defaults site-defaults]]
-            [clojure.java.io :as io])
-  (:use clojure-csv.core))
+            [clojure.java.io :as io]))
 
 (defn step1
   [request]

@@ -71,6 +71,18 @@
     (is (= {module-xml #{student-1}} (by-modules [(->Assignment module-xml student-1 0 0)])))
     (is (= {module-xml #{student-1 student-2}} (by-modules test-assignments)))))
 
+(deftest test-assignment-weight
+  (testing "Assignment weight"
+    (let [a1 (->Assignment module-xml student-1 0 0)
+          a2 (->Assignment module-xml student-5 0 0)
+          a3 (->Assignment module-metadata student-1 1 0)
+          a4 (->Assignment module-metadata student-5 1 0)
+          a5 (->Assignment module-python student-1 1 0)
+          a6 (->Assignment module-digipres student-5 2 0)]
+    (is (= a2 (last (sort-by assignment-weight [a1 a2]))))
+    (is (= a3 (last (sort-by assignment-weight [a3 a4]))))
+    (is (= a6 (last (sort-by assignment-weight [a5 a6])))))))
+
 (deftest test-move-candidates
   (testing "Move candidates"
     (is (= [] (move-candidates test-assignments module-cap)))
@@ -78,12 +90,12 @@
            ;; not on the same course as module-xml so is
            ;; a higher priority move candiate the students
            ;; 1-4.
-           p1 (->Assignment module-xml student-5 0 0)
-           p2 (->Assignment module-xml student-4 1 0)
+           p1 (->Assignment module-xml student-1 0 0)
+           p2 (->Assignment module-xml student-2 1 0)
            p3 (->Assignment module-xml student-3 2 0)
-           p4 (->Assignment module-xml student-2 3 0)
-           p5 (->Assignment module-xml student-1 4 0)] ;; more than cap
-      (is (= [p1 p2 p3 p4 p5] (move-candidates [p5 p4 p3 p2 p1] module-cap))))))
+           p4 (->Assignment module-xml student-4 3 0)
+           p5 (->Assignment module-xml student-5 0 0)] ;; more than cap
+      (is (= [p5 p4 p3 p2 p1] (move-candidates [p1 p2 p3 p4 p5] module-cap))))))
 
 (deftest test-current-assignments-for
   (testing "Assignments for student"

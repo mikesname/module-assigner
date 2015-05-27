@@ -7,7 +7,7 @@
                  [ring/ring-defaults "0.1.2"]
                  [ring/ring-jetty-adapter "1.2.2"]
                  [environ "0.5.0"]
-                 [clojure-csv/clojure-csv "2.0.1"]]
+                 [org.clojure/data.csv "0.1.2"]]
   :plugins [
             [lein-ring "0.8.13"]
             [environ/environ.lein "0.2.1"]]

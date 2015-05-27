@@ -9,22 +9,25 @@
 ;; A record representing a module to which a student can be assigned
 (defrecord Module [id name course])
 
+;; A record representing a student with a given course
 (defrecord Student [id name course])
 
+;; A student's module preferences, in order
 (defrecord Preference [student modules])
 
+;; A single student module preference
 (defrecord ModulePreference [module student choice])
 
+;; An assignment of a student to a given course
 (defrecord Assignment
   [module student choice try])
 
-(defrecord Board
-  [modules preferences assignments attempt])
-
 (defn is-favoured [assignment]
+  """an assignment is favoured if the module course is the
+     same as the student's course"""
   (=
-    (get-in assignment [:module :course])
-    (get-in assignment [:student :course])))
+   (-> assignment :module :course)
+   (-> assignment :student :course)))
 
 (defn by-modules [assignments]
   "turn a list of assignments into a map of module -> set(students)"
@@ -47,12 +50,19 @@
   (filter #(> (module-count assignments (:module %)) cap)
           assignments))
 
+(defn assignment-weight [assignment]
+  """the relative weight on an assignment, based on the
+    choice, the try, and whether or not it is favoured
+    because the student is on the same course as the
+    module"""
+  (vec ((juxt (comp not is-favoured) :choice :try) assignment)))
+
 (defn move-candidates [assignments cap]
   """get move candidates (assignments to over-subscribed modules)
-     and order them by priority"""
-  (sort-by
-    (juxt :choice :try is-favoured)
-    (over-cap-assignments assignments cap)))
+    and order them by priority"""
+  (reverse (sort-by
+    assignment-weight
+    (over-cap-assignments assignments cap))))
 
 (defn next-move-candidate [assignments cap]
   "get the highest priority move candidate"
@@ -81,8 +91,8 @@
         mod-prefs (preferences-for-student preferences student)]
     ;; get the prefs to which the student isn't currently assigned
     (let [rems (into [] (filter
-              (fn [mp] (not (some #(= (:module mp) %) current)))
-            mod-prefs))]
+                          (fn [mp] (not (some #(= (:module mp) %) current)))
+                          mod-prefs))]
       (let [sorted (sort-by (juxt :choice #(module-count assignments (:module %)) ) rems)]
         (under-cap-modules assignments sorted cap)))))
 
@@ -93,15 +103,15 @@
 
 (defn reassign [assignments preferences cap]
   "determine how to move someone from an over-cap module to the next best"
-    (let [assign (next-move-candidate assignments cap)
-          modpref (next-slot-candidate assignments preferences assign cap)]
-      [assign modpref]))
+  (let [assign (next-move-candidate assignments cap)
+        modpref (next-slot-candidate assignments preferences assign cap)]
+    [assign modpref]))
 
 (defn move-student [assignments preferences assign modpref]
   "move a student from an over-cap module to the next best"
   (let [remassignments (into [] (remove #(= assign %) assignments))
         reassignment (->Assignment (:module modpref) (:student assign) (:choice modpref) (+ 1 (:try assign)))
-       ]
+        ]
     (conj remassignments reassignment)))
 
 (defn is-solved [assignments cap]
@@ -113,24 +123,29 @@
     (move-student assignments preferences assign modpref)))
 
 (defn format-assignment [assign]
-    (format "%-10s : %s (choice %d try %d)\n" 
-            (get-in assign [:student :name])
-            (get-in assign [:module :name])
-            (:choice assign)
-            (:try assign)))
+  (format "%-10s : %s (choice %d try %d)" 
+          (-> assign :student :name)
+          (-> assign :module :name)
+          (:choice assign)
+          (:try assign)))
+
+(defn format-module-count [module students] 
+  (format "%-10s : %d" (:name module) (count students)))
 
 (defn print-solution [assignments]
   "print out a set of assignments in a readable way"
-  (apply println (map
-                   format-assignment
-                   (sort-by (fn [a] (get-in a [:student :name])) assignments))))
+  (doseq [f (sort-by (fn [a] (-> a :student :name)) assignments)]
+    (println (format-assignment f))))
 
 (defn print-report [assignments cap iteration]
-  "print out details of the current state"
-    (print-solution assignments)
-    (apply println (map (fn [a] (format "%-10s : %d\n" (:name (first a)) (count (second a)))) (by-modules assignments)))
-    (println "Over-cap:  " (count (over-cap-assignments assignments cap)))
-    (println "Iteration: " iteration))
+  "print out details of the current state"  
+  (print-solution assignments)
+  (println)
+  (doseq [[m s] (by-modules assignments)] (println (format-module-count m s)))
+  (println)
+  (println "Over-cap:  " (count (over-cap-assignments assignments cap)))
+  (println "Iteration: " iteration)
+  (println))
 
 
 (defn solve [assignments preferences cap iteration]
@@ -147,7 +162,7 @@
 
 (defn- prefs-to-initial-assignment [pref]
   """given the module count per student, generate a set of 
-     initial assignments."""
+    initial assignments."""
   (let [student (:student pref) modules (:modules pref)]
     (map-indexed (fn [i,m] (->Assignment m student i 0)) (take modules-per-student modules))))
 
