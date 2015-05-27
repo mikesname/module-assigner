@@ -50,8 +50,8 @@
   (->Preference student-8 [module-xml module-python module-metadata module-digipres])])
 
 (def test-assignments [
-    (->Assignment module-xml student-1 0 0)
-    (->Assignment module-xml student-2 0 0)
+    (->Assignment module-xml student-1 0 0 0)
+    (->Assignment module-xml student-2 0 0 1)
                        ])
 
 (deftest test-get-course
@@ -68,17 +68,17 @@
 
 (deftest test-by-modules
   (testing "Assignments by modules"
-    (is (= {module-xml #{student-1}} (by-modules [(->Assignment module-xml student-1 0 0)])))
+    (is (= {module-xml #{student-1}} (by-modules [(->Assignment module-xml student-1 0 0 0)])))
     (is (= {module-xml #{student-1 student-2}} (by-modules test-assignments)))))
 
 (deftest test-assignment-weight
   (testing "Assignment weight"
-    (let [a1 (->Assignment module-xml student-1 0 0)
-          a2 (->Assignment module-xml student-5 0 0)
-          a3 (->Assignment module-metadata student-1 1 0)
-          a4 (->Assignment module-metadata student-5 1 0)
-          a5 (->Assignment module-python student-1 1 0)
-          a6 (->Assignment module-digipres student-5 2 0)]
+    (let [a1 (->Assignment module-xml student-1 0 0 0)
+          a2 (->Assignment module-xml student-5 0 0 1)
+          a3 (->Assignment module-metadata student-1 1 0 2)
+          a4 (->Assignment module-metadata student-5 1 0 3)
+          a5 (->Assignment module-python student-1 1 0 4)
+          a6 (->Assignment module-digipres student-5 2 0 5)]
     (is (= a2 (last (sort-by assignment-weight [a1 a2]))))
     (is (= a3 (last (sort-by assignment-weight [a3 a4]))))
     (is (= a6 (last (sort-by assignment-weight [a5 a6])))))))
@@ -90,24 +90,24 @@
            ;; not on the same course as module-xml so is
            ;; a higher priority move candiate the students
            ;; 1-4.
-           p1 (->Assignment module-xml student-1 0 0)
-           p2 (->Assignment module-xml student-2 1 0)
-           p3 (->Assignment module-xml student-3 2 0)
-           p4 (->Assignment module-xml student-4 3 0)
-           p5 (->Assignment module-xml student-5 0 0)] ;; more than cap
+           p1 (->Assignment module-xml student-1 0 0 0)
+           p2 (->Assignment module-xml student-2 1 0 1)
+           p3 (->Assignment module-xml student-3 2 0 2)
+           p4 (->Assignment module-xml student-4 3 0 3)
+           p5 (->Assignment module-xml student-5 0 0 4)] ;; more than cap
       (is (= [p5 p4 p3 p2 p1] (move-candidates [p1 p2 p3 p4 p5] module-cap))))))
 
 (deftest test-current-assignments-for
   (testing "Assignments for student"
-    (let [a1 (->Assignment module-xml student-1 0 0)
-          a2 (->Assignment module-python student-1 0 0)
-          a3 (->Assignment module-digipres student-2 0 0)]
+    (let [a1 (->Assignment module-xml student-1 0 0 0)
+          a2 (->Assignment module-python student-1 0 0 1)
+          a3 (->Assignment module-digipres student-2 0 0 2)]
       (is (= [a1 a2] (current-assignments-for [a1 a2 a3] student-1))))))
 
 (deftest test-is-favoured
   (testing "Favoured modules"
-    (is (= true (is-favoured (->Assignment module-xml student-1 0, 0))))
-    (is (= false (is-favoured (->Assignment module-metadata student-1 0, 0))))))
+    (is (= true (is-favoured (->Assignment module-xml student-1 0 0 0))))
+    (is (= false (is-favoured (->Assignment module-metadata student-1 0 0 1))))))
 
 (deftest test-preferences-for-student
   (testing "Preferences for student"
@@ -123,8 +123,8 @@
   (testing "Remaining preferences for student"
     (let [p1 (->Preference student-1 [module-xml module-python module-digipres])
           p2 (->Preference student-2 [module-xml module-python])
-          a1 (->Assignment module-xml student-1 0 0)
-          a2 (->Assignment module-xml student-2 0 0)
+          a1 (->Assignment module-xml student-1 0 0 0)
+          a2 (->Assignment module-xml student-2 0 0 1)
           ]
       (is (= [
               (->ModulePreference module-python student-1 1)
@@ -140,8 +140,8 @@
   (testing "Next slot for an over-cap assignment"
     (let [p1 (->Preference student-1 [module-xml module-python module-digipres])
           p2 (->Preference student-2 [module-xml module-python])
-          a1 (->Assignment module-xml student-1 0 0)
-          a2 (->Assignment module-xml student-2 0 0)
+          a1 (->Assignment module-xml student-1 0 0 0)
+          a2 (->Assignment module-xml student-2 0 0 1)
           ]
       (is (= (->ModulePreference module-python student-1 1)
              (next-slot-candidate [a1 a2] [p1 p2] a1 module-cap))))))
@@ -149,11 +149,11 @@
 (deftest test-reassign-and-move
   (testing "Reassignment and move"
     (let [
-         a1 (->Assignment module-xml student-1 0 0)
-         a2 (->Assignment module-xml student-2 0 0)
-         a3 (->Assignment module-xml student-3 0 0)
-         a4 (->Assignment module-xml student-4 0 0)
-         a5 (->Assignment module-xml student-5 0 0)
+         a1 (->Assignment module-xml student-1 0 0 0)
+         a2 (->Assignment module-xml student-2 0 0 1)
+         a3 (->Assignment module-xml student-3 0 0 2)
+         a4 (->Assignment module-xml student-4 0 0 3)
+         a5 (->Assignment module-xml student-5 0 0 4)
          p1 (->Preference student-1 [module-xml module-python])
          p2 (->Preference student-2 [module-xml module-python])
          p3 (->Preference student-3 [module-xml module-python])
@@ -167,7 +167,7 @@
      (is (= module-xml (:module assign)))
 
       (let [newassignments (move-student [a1 a2 a3 a4 a5] [p1 p2 p3 p4 p5] assign modpref)
-            assign (->Assignment module-python student-5 1 1)]
+            assign (->Assignment module-python student-5 1 1 4)]
         (is (= 5 (count newassignments)))
         (is (= assign (last newassignments)))
         )))))
@@ -175,11 +175,11 @@
  (deftest test-solve
    (testing "Solve"
      (let [
-          a1 (->Assignment module-xml student-1 0 0)
-          a2 (->Assignment module-xml student-2 0 0)
-          a3 (->Assignment module-xml student-3 0 0)
-          a4 (->Assignment module-xml student-4 0 0)
-          a5 (->Assignment module-xml student-5 0 0)
+          a1 (->Assignment module-xml student-1 0 0 0)
+          a2 (->Assignment module-xml student-2 0 0 1)
+          a3 (->Assignment module-xml student-3 0 0 2)
+          a4 (->Assignment module-xml student-4 0 0 3)
+          a5 (->Assignment module-xml student-5 0 0 4)
           p1 (->Preference student-1 [module-xml module-python])
           p2 (->Preference student-2 [module-xml module-python])
           p3 (->Preference student-3 [module-xml module-python])
@@ -192,8 +192,8 @@
 (deftest test-assign-initial
   (testing "Assignment"
     (is (= [
-            (->Assignment module-xml student-1 0 0)
-            (->Assignment module-python student-1 1 0)
+            (->Assignment module-xml student-1 0 0 0)
+            (->Assignment module-python student-1 1 0 1)
             ] (assign-initial [(->Preference student-1 [module-xml module-python])])))))
 
 (deftest test-solve-all
@@ -202,20 +202,22 @@
           assignments (assign-initial test-preferences)
           solved (solve assignments test-preferences module-cap 0)
           ]
-      (print-solution assignments)
-      (print-solution solved)
+      (print-solution assignments test-preferences)
+      (print-solution solved test-preferences)
       (is (= (count assignments) (count solved)))
       (is (is-solved solved module-cap)))))
 
 (deftest test-solve-all-random
   (testing "Solve board"
-    (let [
-          randprefs (map #(update-in % [:modules] shuffle) test-preferences)
-          assignments (assign-initial randprefs)
-          solved (solve assignments randprefs module-cap 0)
-          ]
-      (print-solution assignments)
-      (print-solution solved)
-      (is (is-solved solved module-cap)))))
+    (dotimes [n 100]
+      (let [
+            randprefs (map #(update-in % [:modules] shuffle) test-preferences)
+            assignments (assign-initial randprefs)
+            solved (solve assignments randprefs module-cap 0)
+            ]
+        ;;(print-solution assignments randprefs)
+        ;;(print-solution solved randprefs)
+        (print-moves assignments solved randprefs module-cap)
+        (is (is-solved solved module-cap))))))
 
 
