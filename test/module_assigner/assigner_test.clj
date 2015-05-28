@@ -159,8 +159,9 @@
          p3 (->Preference student-3 [module-xml module-python])
          p4 (->Preference student-4 [module-xml module-python])
          p5 (->Preference student-5 [module-xml module-python])
+         board (init-board [p1 p2 p3 p4 p5] [a1 a2 a3 a4 a5] module-cap) 
           ]
-    (let [[assign modpref] (reassign [a1 a2 a3 a4 a5] [p1 p2 p3 p4 p5] module-cap)]
+    (let [[assign modpref] (reassign board)]
      (is (= student-5 (:student assign)))
      (is (= 1 (:choice modpref)))
      (is (= module-python (:module modpref)))
@@ -185,9 +186,10 @@
           p3 (->Preference student-3 [module-xml module-python])
           p4 (->Preference student-4 [module-xml module-python])
           p5 (->Preference student-5 [module-xml module-python])
+          board (init-board [p1 p2 p3 p4 p5] [a1 a2 a3 a4 a5] module-cap) 
            ]
-     (let [solution (solve [a1 a2 a3 a4 a5] [p1 p2 p3 p4 p5] module-cap 0)]
-       (is (= 5 (count solution)))))))
+     (let [solution (solve board)]
+       (is (= 5 (count (:assignments solution))))))))
 
 (deftest test-assign-initial
   (testing "Assignment"
@@ -200,24 +202,26 @@
   (testing "Solve board"
     (let [
           assignments (assign-initial test-preferences)
-          solved (solve assignments test-preferences module-cap 0)
+          board (init-board test-preferences assignments module-cap)
+          solved (solve board)
           ]
-      (print-solution assignments test-preferences)
-      (print-solution solved test-preferences)
-      (is (= (count assignments) (count solved)))
-      (is (is-solved solved module-cap)))))
+      (print-solution board)
+      (print-solution solved)
+      (is (= (count assignments) (count (:assignments solved))))
+      (is (is-solved solved)))))
 
 (deftest test-solve-all-random
   (testing "Solve board"
     (dotimes [n 100]
       (let [
             randprefs (map #(update-in % [:modules] shuffle) test-preferences)
-            assignments (assign-initial randprefs)
-            solved (solve assignments randprefs module-cap 0)
+            board (init-board-with-modules test-modules randprefs module-cap)
+            solved (solve board)
             ]
-        ;;(print-solution assignments randprefs)
-        ;;(print-solution solved randprefs)
-        (print-moves assignments solved randprefs module-cap)
-        (is (is-solved solved module-cap))))))
+        (print-solution board)
+        (print-moves solved)
+        (print-solution solved)
+        (println)
+        (is (is-solved solved))))))
 
 
