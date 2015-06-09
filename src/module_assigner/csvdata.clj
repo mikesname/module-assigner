@@ -30,16 +30,12 @@
 (defn read-modules 
   "read a set of module data from a reader"
   [reader]
-  (into
-    []
-    (doall
-      (map (partial apply read-module) (csv/read-csv reader)))))
+  (doall
+    (map (partial apply read-module) (csv/read-csv reader))))
 
 (defn read-preferences
   "read a set of student preferences, given a set of modules"
   [mods reader]
-  (into
-    []
-    (doall
-      (map (partial apply read-preference mods) (csv/read-csv reader)))))
+  (doall
+    (map (partial apply read-preference mods) (csv/read-csv reader))))
 
