@@ -69,5 +69,16 @@
                     (catch clojure.lang.ExceptionInfo e (ex-data e)))]
       (is (= {:line 1 :column 3 :description "choice 1"} info)))))
 
+(deftest test-read-preferences-with-bad-module-reference
+  (testing "Reading Preference CSV with bad module ref at line 1 col 7"
+    ;; NB: Line/column data are 0-indexed
+    (let [badcsv (str
+            "1,Bob,DH,1,2,3,5" \newline ;; uh oh, 5 is not a module
+            "2,Jane,DH,1,2,3,4" \newline)
+          mods (read-modules test-module-data-1)
+          info (try (read-preferences mods badcsv)
+                    (catch clojure.lang.ExceptionInfo e (ex-data e)))]
+      (is (= {:line 0 :column 6 :description "choice 4"} info)))))
+
 
 

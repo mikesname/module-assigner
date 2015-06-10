@@ -30,8 +30,14 @@
 
 (defn- read-preference [mods line & args]
   "create a student preference from flat data: sid, name, course, p1-p4"
-  (defn find-mod [id]
-    (first (filter #(= (:id %) id) mods)))
+  (defn find-mod [desc col]
+    (let [mod
+          (first (filter #(= (:id %) (parse-id desc line col args)) mods))]
+      (if (nil? mod)
+        (throw (ex-info (str (format "Unknown module reference at line: %d, column %d ", line, col)
+                             (format "for %s", desc))
+                        {:line line :column col :description desc}))
+        mod)))
 
   (when (not (= 7 (count args)))
     (throw (ex-info (str (format "Bad data at line: %d. " line)
@@ -44,10 +50,10 @@
       (parse-id "student id", line, 0, args)
       (nth args 1)
       (->Course (nth args 2)))
-    [(find-mod (parse-id "choice 1", line, 3, args))
-     (find-mod (parse-id "choice 2", line, 4, args))
-     (find-mod (parse-id "choice 3", line, 5, args))
-     (find-mod (parse-id "choice 4", line, 6, args))]))
+    [(find-mod "choice 1", 3)
+     (find-mod "choice 2", 4)
+     (find-mod "choice 3", 5)
+     (find-mod "choice 4", 6)]))
 
 (defn read-modules 
   "read a set of module data from a reader"
