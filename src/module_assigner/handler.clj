@@ -21,7 +21,13 @@
                    [:tr [:td (nth-of-type 2)]] (content (:name module))
                    [:tr [:td (nth-of-type 3)]] (content (:name (:course module)))))
 
-(deftemplate step2-t "module-assigner/step2.html" [modules]
+(deftemplate step2-t "module-assigner/step2.html" [modules modcsv]
+  [:input#module-data] (set-attr :value modcsv)
+  [:tbody] (content (module-snippet modules)))
+
+(deftemplate step3-t "module-assigner/step3.html" [modules modcsv prefs prefcsv]
+  [:input#module-data] (set-attr :value modcsv)
+  [:input#preference-data] (set-attr :value prefcsv)
   [:tbody] (content (module-snippet modules)))
 
 
@@ -34,25 +40,39 @@
 
 (defn upload-modules
   [file filename]
-  (with-open [rdr (clojure.java.io/reader file)]
-    (let [modules (read-modules rdr)]
-      (render (step2-t modules)))))
+  (let [csvstr (slurp file) modules (read-modules csvstr)]
+    (render (step2-t modules csvstr))))
+
+(defn upload-preferences
+  [file filename modcsv]
+  (let [prefcsv (slurp file)
+        modules (read-modules modcsv)
+        prefs (read-preferences modules prefcsv)
+        solved (solve (init-board-with-modules modules prefs 1))]
+    (print-report solved)
+    (render (step3-t modules modcsv prefs prefcsv))))
 
 (defn step2
   [request]
   "The second page, where we show the student preference upload field")
 
 (defn step3
-  [request]
+  [params]
+  (println params)
   "The third page, where we render the results")
 
 (defroutes app-routes
   (GET "/" [] (render (index-t)))
+
   (POST "/step2" {:keys [params]}
         (let [{:keys [tempfile filename]} (get params :file)]
           (upload-modules tempfile filename)))
+  
+  (POST "/step3" {:keys [params]}
+        (let [{:keys [tempfile filename]} (get params :file)
+              modcsv (get params :modcsv)]
+          (upload-preferences tempfile filename modcsv)))
 
-  (POST "/step3" [] step3)
   ; this is an example POST file upload
   (POST "/upload"
            {{{tempfile :tempfile filename :filename} :file} :params :as params}

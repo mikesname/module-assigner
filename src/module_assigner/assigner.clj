@@ -218,7 +218,7 @@
         preferences (:preferences board)
         iteration (count (:moves board))
         cap (:cap board)]
-    (print-solution assignments preferences)
+    (print-solution board)
     (println)
     (doseq [[m s] (by-modules assignments)] (println (format-module-count m s)))
     (println)
