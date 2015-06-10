@@ -5,37 +5,59 @@
 
 (use '[module-assigner.assigner :refer :all])
 
-(defn- read-module [& args]
+(defn- parse-id
+  "parse a numeric id at a given column. The line is for info only"
+  [desc line col data]
+  (try
+    (Integer/parseInt (nth data col))
+    (catch NumberFormatException e
+      (throw (ex-info (str (format "Bad data at line: %d, column %d ", line, col)
+                           (format "attempting to read %s as a number", desc))
+                      {:line line :column col :description desc})))))
+
+
+(defn- read-module [line & args]
   "create a module from flat data: id, course id, mod-id, name"
+  (when (not (= 5 (count args)))
+    (throw (ex-info (str (format "Bad data at line: %d. " line)
+                                           "Module data should consist of: "
+                                           "id, course id, module id, module name")
+                    {:line line})))
   (->Module
-    (read-string (nth args 0))
+    (parse-id "module id" line 0 args)
     (nth args 4)
     (->Course (nth args 1))))
 
-(defn- read-preference [mods & args]
+(defn- read-preference [mods line & args]
   "create a student preference from flat data: sid, name, course, p1-p4"
   (defn find-mod [id]
     (first (filter #(= (:id %) id) mods)))
 
+  (when (not (= 7 (count args)))
+    (throw (ex-info (str (format "Bad data at line: %d. " line)
+                                           "Preference data should consist of: "
+                                           "student id, student name, course id, "
+                                           "choice 1, choice 2, choice 3, choice 4")
+                    {:line line})))
   (->Preference
     (->Student 
-      (read-string (nth args 0))
+      (parse-id "student id", line, 0, args)
       (nth args 1)
       (->Course (nth args 2)))
-    [(find-mod (read-string (nth args 3)))
-     (find-mod (read-string (nth args 4)))
-     (find-mod (read-string (nth args 5)))
-     (find-mod (read-string (nth args 6)))]))
+    [(find-mod (parse-id "choice 1", line, 3, args))
+     (find-mod (parse-id "choice 2", line, 4, args))
+     (find-mod (parse-id "choice 3", line, 5, args))
+     (find-mod (parse-id "choice 4", line, 6, args))]))
 
 (defn read-modules 
   "read a set of module data from a reader"
   [reader]
   (doall
-    (map (partial apply read-module) (csv/read-csv reader))))
+    (map-indexed (partial apply read-module) (csv/read-csv reader))))
 
 (defn read-preferences
   "read a set of student preferences, given a set of modules"
   [mods reader]
   (doall
-    (map (partial apply read-preference mods) (csv/read-csv reader))))
+    (map-indexed (partial apply read-preference mods) (csv/read-csv reader))))
 
