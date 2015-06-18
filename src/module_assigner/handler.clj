@@ -48,6 +48,9 @@
   [:input#module-data] (set-attr :value modcsv)
   [:#modules :tbody] (content (module-snippet modules)))
 
+(deftemplate step2-error "module-assigner/index.html" [error]
+  [:.form-errors] (content error))
+
 (deftemplate step3-t "module-assigner/step3.html" [modules modcsv prefs prefcsv solved]
   [:input#module-data] (set-attr :value modcsv)
   [:input#preference-data] (set-attr :value prefcsv)
@@ -60,36 +63,40 @@
                              (:assignments solved)))
   [:#moves :tbody] (content (moves-snippet (:moves solved))))
 
+(deftemplate step3-error "module-assigner/step2.html" [modules modcsv error]
+  [:input#module-data] (set-attr :value modcsv)
+  [:#modules :tbody] (content (module-snippet modules))
+  [:.form-errors] (content error))
+
 
 (defn render [t]
   (apply str t))
 
-(defn index
-  [request]
-  "The first page, where we show the course info upload field")
-
 (defn upload-modules
   [file filename]
-  (let [csvstr (slurp file) modules (read-modules csvstr)]
-    (render (step2-t modules csvstr))))
+  (if (not (clojure.string/blank? filename))
+    (try
+      (let [csvstr (slurp file) modules (read-modules csvstr)]
+        (render (step2-t modules csvstr)))
+      (catch clojure.lang.ExceptionInfo e
+        (render (step2-error (.getMessage e)))))
+    (render (step2-error "no file given"))))
 
 (defn upload-preferences
   [file filename modcsv]
-  (let [prefcsv (slurp file)
-        modules (read-modules modcsv)
-        prefs (read-preferences modules prefcsv)
-        solved (solve (init-board-with-modules modules prefs 1))]
-    (print-report solved)
-    (render (step3-t modules modcsv prefs prefcsv solved))))
+  (let [modules (read-modules modcsv)]
+    (if (not (clojure.string/blank? filename))
+      (try    
+        (let [prefcsv (slurp file)
+              prefs (read-preferences modules prefcsv)
+              solved (solve (init-board-with-modules modules prefs 1))]
+          (print-report solved)
+          (render (step3-t modules modcsv prefs prefcsv solved)))
+        (catch clojure.lang.ExceptionInfo e
+          (render (step3-error modules modcsv (.getMessage e)))))
+      (render (step3-error modules modcsv "no file given")))))
+    
 
-(defn step2
-  [request]
-  "The second page, where we show the student preference upload field")
-
-(defn step3
-  [params]
-  (println params)
-  "The third page, where we render the results")
 
 (defroutes app-routes
   (GET "/" [] (render (index-t)))
