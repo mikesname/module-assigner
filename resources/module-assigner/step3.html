@@ -1,81 +1,72 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8" />
-    <title>Step 3</title>
-</head>
-<body>
-    <h1>File upload successful!</h1>
-    <h2>Here is a list of modules:</h2>
-    <form action="/step4" method="POST" enctype="multipart/form-data">
-        <input type="hidden" name="modcsv" id="module-data" value="" />
-        <table id="modules">
-            <thead>
-                <tr>
-                    <th>#</th>
-                    <th>Name</th>
-                    <th>Course</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td>1</td>
-                    <td>Placeholder</td>
-                    <td>Data</td>
-                </tr>
-            </tbody>
-        </table>
+<h1>File upload successful!</h1>
+<h2>Here is a list of modules:</h2>
+<form action="/step4" method="POST" enctype="multipart/form-data">
+    <input type="hidden" name="modcsv" id="module-data" value="" />
+    <table id="modules">
+        <thead>
+            <tr>
+                <th>#</th>
+                <th>Name</th>
+                <th>Course</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>1</td>
+                <td>Placeholder</td>
+                <td>Data</td>
+            </tr>
+        </tbody>
+    </table>
 
-        <h2>And here are the preferences:</h2>
-        <input type="hidden" name="prefcsv" id="preference-data" value="" />
-        <table id="preferences">
-            <thead>
-                <tr>
-                    <th>Module</th>
-                    <th>Students</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td>Placeholder</td>
-                    <td>Data</td>
-                </tr>
-            </tbody>
-        </table>
+    <h2>And here are the preferences:</h2>
+    <input type="hidden" name="prefcsv" id="preference-data" value="" />
+    <table id="preferences">
+        <thead>
+            <tr>
+                <th>Module</th>
+                <th>Students</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>Placeholder</td>
+                <td>Data</td>
+            </tr>
+        </tbody>
+    </table>
 
-        <h2>This is the calculated assignments:</h2>
-        <table id="assignments">
-            <thead>
-                <tr>
-                    <th>Module</th>
-                    <th>Students</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td>Placeholder</td>
-                    <td>Data</td>
-                </tr>
-            </tbody>
-        </table>
+    <h2>This is the calculated assignments:</h2>
+    <table id="assignments">
+        <thead>
+            <tr>
+                <th>Module</th>
+                <th>Students</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>Placeholder</td>
+                <td>Data</td>
+            </tr>
+        </tbody>
+    </table>
 
-        <h2>Students who were reassigned:</h2>
-        <table id="moves">
-            <thead>
-                <tr>
-                    <th>Student</th>
-                    <th>From Module</th>
-                    <th>To Module</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td>Some</td>
-                    <td>Placeholder</td>
-                    <td>Data</td>
-                </tr>
-            </tbody>
-        </table>
-    </form>
-</body>
-</html>
+    <h2>Students who were reassigned:</h2>
+    <table id="moves">
+        <thead>
+            <tr>
+                <th>Student</th>
+                <th>From Module</th>
+                <th>To Module</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>Some</td>
+                <td>Placeholder</td>
+                <td>Data</td>
+            </tr>
+        </tbody>
+    </table>
+</form>

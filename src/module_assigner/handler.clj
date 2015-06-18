@@ -1,7 +1,7 @@
 (ns module-assigner.handler
   (:use [net.cgrand.enlive-html
          :only [deftemplate defsnippet content clone-for
-                first-of-type nth-of-type first-child do-> set-attr sniptest at emit*]])
+                first-of-type nth-of-type first-child do-> set-attr add-class sniptest at emit*]])
   (:require [compojure.core :refer :all]
             [compojure.route :as route]
             [ring.middleware.defaults :refer [wrap-defaults site-defaults]]
@@ -11,7 +11,11 @@
 (use '[module-assigner.assigner :refer :all]
      '[module-assigner.csvdata :refer :all])
 
-(deftemplate index-t "module-assigner/index.html" [])
+(deftemplate page-t "module-assigner/template.html" [title body]
+  [:title] (content title)
+  [:.main] (content body))
+
+(defsnippet index-t "module-assigner/index.html" [:div.article] [] identity)
 
 (defsnippet module-snippet "module-assigner/step2.html" 
   [:#modules :tbody [:tr first-of-type]]
@@ -44,14 +48,15 @@
                      [:tr [:td (nth-of-type 2)]] (content (:name (:from move)))
                      [:tr [:td (nth-of-type 3)]] (content (:name (:to move))))))
 
-(deftemplate step2-t "module-assigner/step2.html" [modules modcsv]
+(defsnippet step2-t "module-assigner/step2.html" [:form] [modules modcsv]
   [:input#module-data] (set-attr :value modcsv)
   [:#modules :tbody] (content (module-snippet modules)))
 
-(deftemplate step2-error "module-assigner/index.html" [error]
-  [:.form-errors] (content error))
+(defsnippet step2-error "module-assigner/index.html" [:form] [error]
+  [:.modules-file] (add-class "error")
+  [:.modules-file :.form-errors] (content error))
 
-(deftemplate step3-t "module-assigner/step3.html" [modules modcsv prefs prefcsv solved]
+(defsnippet step3-t "module-assigner/step3.html" [:form] [modules modcsv prefs prefcsv solved]
   [:input#module-data] (set-attr :value modcsv)
   [:input#preference-data] (set-attr :value prefcsv)
   [:#modules :tbody] (content (module-snippet modules))
@@ -63,7 +68,7 @@
                              (:assignments solved)))
   [:#moves :tbody] (content (moves-snippet (:moves solved))))
 
-(deftemplate step3-error "module-assigner/step2.html" [modules modcsv error]
+(defsnippet step3-error "module-assigner/step2.html" [:form] [modules modcsv error]
   [:input#module-data] (set-attr :value modcsv)
   [:#modules :tbody] (content (module-snippet modules))
   [:.form-errors] (content error))
@@ -72,15 +77,18 @@
 (defn render [t]
   (apply str t))
 
+(defn render-page [title t]
+  (page-t title t))
+
 (defn upload-modules
   [file filename]
   (if (not (clojure.string/blank? filename))
     (try
       (let [csvstr (slurp file) modules (read-modules csvstr)]
-        (render (step2-t modules csvstr)))
+        (render-page "Step 2" (step2-t modules csvstr)))
       (catch clojure.lang.ExceptionInfo e
-        (render (step2-error (.getMessage e)))))
-    (render (step2-error "no file given"))))
+        (render-page "Data Error" (step2-error (.getMessage e)))))
+    (render-page "Error" (step2-error "no file given"))))
 
 (defn upload-preferences
   [file filename modcsv]
@@ -91,15 +99,15 @@
               prefs (read-preferences modules prefcsv)
               solved (solve (init-board-with-modules modules prefs 1))]
           (print-report solved)
-          (render (step3-t modules modcsv prefs prefcsv solved)))
+          (render-page "Result" (step3-t modules modcsv prefs prefcsv solved)))
         (catch clojure.lang.ExceptionInfo e
-          (render (step3-error modules modcsv (.getMessage e)))))
-      (render (step3-error modules modcsv "no file given")))))
+          (render-page "Error" (step3-error modules modcsv (.getMessage e)))))
+      (render-page "Error" (step3-error modules modcsv "no file given")))))
     
 
 
 (defroutes app-routes
-  (GET "/" [] (render (index-t)))
+  (GET "/" [] (render-page "Module Assigner" (index-t)))
 
   (POST "/step2" {:keys [params]}
         (let [{:keys [tempfile filename]} (get params :file)]
