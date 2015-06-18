@@ -7,7 +7,7 @@
   (testing "main route"
     (let [response (app (mock/request :get "/"))]
       (is (= (:status response) 200))
-      (is (= (:body response) "The first page, where we show the course info upload field"))))
+      (is (.contains (:body response) "Module Assigner: Step 1"))))
 
   (testing "not-found route"
     (let [response (app (mock/request :get "/invalid"))]

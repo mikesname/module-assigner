@@ -14,21 +14,51 @@
 (deftemplate index-t "module-assigner/index.html" [])
 
 (defsnippet module-snippet "module-assigner/step2.html" 
-  [:tbody [:tr first-of-type]]
+  [:#modules :tbody [:tr first-of-type]]
   [modules]
   [:tr] (clone-for [module modules]
                    [:tr [:td (nth-of-type 1)]] (content (str (:id module)))
                    [:tr [:td (nth-of-type 2)]] (content (:name module))
                    [:tr [:td (nth-of-type 3)]] (content (:name (:course module)))))
 
+(defsnippet assignments-snippet "module-assigner/step3.html" 
+  [:#preferences :tbody [:tr first-of-type]]
+  [assignments]
+  [:tr] (clone-for [[module students] (by-modules assignments)]
+                   [:tr [:td (nth-of-type 1)]] (content (:name module))
+                   [:tr [:td (nth-of-type 2)]] (content (clojure.string/join ", " (map :name students)))))
+
+(defsnippet solved-assignments-snippet "module-assigner/step3.html" 
+  [:#assignments :tbody [:tr first-of-type]]
+  [assignments]
+  [:tr] (clone-for [[module students] (by-modules assignments)]
+                   [:tr [:td (nth-of-type 1)]] (content (:name module))
+                   [:tr [:td (nth-of-type 2)]] (content (clojure.string/join ", " (map :name students)))))
+
+(defsnippet moves-snippet "module-assigner/step3.html" 
+  [:#moves :tbody [:tr first-of-type]]
+  [moves]
+  (when (not (empty? moves))
+    [:tr] (clone-for [move moves]
+                     [:tr [:td (nth-of-type 1)]] (content (:name (:student move)))
+                     [:tr [:td (nth-of-type 2)]] (content (:name (:from move)))
+                     [:tr [:td (nth-of-type 3)]] (content (:name (:to move))))))
+
 (deftemplate step2-t "module-assigner/step2.html" [modules modcsv]
   [:input#module-data] (set-attr :value modcsv)
-  [:tbody] (content (module-snippet modules)))
+  [:#modules :tbody] (content (module-snippet modules)))
 
-(deftemplate step3-t "module-assigner/step3.html" [modules modcsv prefs prefcsv]
+(deftemplate step3-t "module-assigner/step3.html" [modules modcsv prefs prefcsv solved]
   [:input#module-data] (set-attr :value modcsv)
   [:input#preference-data] (set-attr :value prefcsv)
-  [:tbody] (content (module-snippet modules)))
+  [:#modules :tbody] (content (module-snippet modules))
+  [:#preferences :tbody] (content 
+                           (assignments-snippet 
+                             (assign-initial prefs)))
+  [:#assignments :tbody] (content 
+                           (solved-assignments-snippet 
+                             (:assignments solved)))
+  [:#moves :tbody] (content (moves-snippet (:moves solved))))
 
 
 (defn render [t]
@@ -50,7 +80,7 @@
         prefs (read-preferences modules prefcsv)
         solved (solve (init-board-with-modules modules prefs 1))]
     (print-report solved)
-    (render (step3-t modules modcsv prefs prefcsv))))
+    (render (step3-t modules modcsv prefs prefcsv solved))))
 
 (defn step2
   [request]
