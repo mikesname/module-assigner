@@ -80,11 +80,20 @@
 (defn render-page [title t]
   (page-t title t))
 
+(defn- clean-data [file]
+  ;; TODO: Better way of reading file
+  ;; and return ing a seq without slurping it.
+  ;; FIXME: System-dependent newlines
+  (clojure.string/join
+    "\n"
+    (filter #(not (clojure.string/blank? %))
+          (clojure.string/split-lines (slurp file)))))
+
 (defn upload-modules
   [file filename]
   (if (not (clojure.string/blank? filename))
     (try
-      (let [csvstr (slurp file) modules (read-modules csvstr)]
+      (let [csvstr (clean-data file) modules (read-modules csvstr)]
         (render-page "Step 2" (step2-t modules csvstr)))
       (catch clojure.lang.ExceptionInfo e
         (render-page "Data Error" (step2-error (.getMessage e)))))
@@ -95,7 +104,7 @@
   (let [modules (read-modules modcsv)]
     (if (not (clojure.string/blank? filename))
       (try    
-        (let [prefcsv (slurp file)
+        (let [prefcsv (clean-data file)
               prefs (read-preferences modules prefcsv)
               solved (solve (init-board-with-modules modules prefs 1))]
           (print-report solved)

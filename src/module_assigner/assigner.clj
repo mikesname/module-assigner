@@ -164,6 +164,9 @@
         preferences (:preferences board)
         candidates (move-candidates assignments cap)]
     (let [[assign modpref] (find-best-candidate assignments candidates preferences cap)]
+      (when (nil? assign)
+        (print-report board)
+        (throw (ex-info "No move candidate found!" {:board board})))
       (assert assign)
       (assert modpref)
       [assign modpref])))

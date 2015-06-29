@@ -8,8 +8,9 @@
 (defn- parse-id
   "parse a numeric id at a given column. The line is for info only"
   [desc line col data]
+  (println "Parsing data", desc, line, col, data)
   (try
-    (Integer/parseInt (nth data col))
+    (Integer/parseInt (.trim (nth data col)))
     (catch NumberFormatException e
       (throw (ex-info (str (format "Bad data at line: %d, column %d ", line, col)
                            (format "attempting to read %s as a number", desc))
@@ -30,6 +31,7 @@
 
 (defn- read-preference [mods line & args]
   "create a student preference from flat data: sid, name, course, p1-p4"
+  (println "read prefs" mods line args)
   (defn find-mod [desc col]
     (let [mod
           (first (filter #(= (:id %) (parse-id desc line col args)) mods))]
@@ -66,4 +68,8 @@
   [mods reader]
   (doall
     (map-indexed (partial apply read-preference mods) (csv/read-csv reader))))
+
+(defn write-results
+  "write results to a csv"
+  [results])
 
