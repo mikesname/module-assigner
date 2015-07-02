@@ -1,33 +1,35 @@
-<form action="/step3" method="POST" enctype="multipart/form-data">
-    <h1>File upload successful!</h1>
-    <div class="modules-section">
-        <h2>Here is a list of modules:</h2>
-        <input type="hidden" name="modcsv" id="module-data" value="" />
-        <table id="modules">
-            <thead>
-                <tr>
-                    <th>#</th>
-                    <th>Name</th>
-                    <th>Course</th>
-                </tr>
-            </thead>
-            <tbody>
+<div class="article">
+    <form action="/step3" method="POST" enctype="multipart/form-data">
+        <h1>File upload successful!</h1>
+        <div class="modules-section">
+            <h2>Modules:</h2>
+            <input type="hidden" name="modcsv" id="module-data" value="" />
+            <table id="modules" class="sheet-table">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Name</th>
+                        <th>Course</th>
+                    </tr>
+                </thead>
+                <tbody>
                 <tr>
                     <td>1</td>
                     <td>Placeholder</td>
                     <td>Data</td>
                 </tr>
-            </tbody>
-        </table>
-    </div>
+                </tbody>
+            </table>
+        </div>
 
-    <div class="preferences-section row">
-        <label class="preferences-file">
-            Select student module preferences
-            <input name="file" type="file" size="20" />
-            <span class="form-errors"></span>
-        </label>
+        <div class="preferences-section row">
+            <label class="preferences-file">
+                Select student module preferences
+                <input name="file" type="file" size="20" />
+                <span class="form-errors"></span>
+            </label>
 
-        <input type="submit" name="submit" value="submit" />
-    </div>
-</form>
+            <input type="submit" name="submit" value="submit" />
+        </div>
+    </form>
+</div>

@@ -4,10 +4,10 @@
             [module-assigner.handler :refer :all]))
 
 (deftest test-app
-  (testing "main route"
+  (testing "index route"
     (let [response (app (mock/request :get "/"))]
       (is (= (:status response) 200))
-      (is (.contains (:body response) "Module Assigner: Step 1"))))
+      (is (.contains (apply str (:body response)) "Step 1"))))
 
   (testing "not-found route"
     (let [response (app (mock/request :get "/invalid"))]

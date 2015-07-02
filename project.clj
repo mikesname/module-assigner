@@ -7,6 +7,8 @@
                  [ring/ring-defaults "0.1.2"]
                  [ring/ring-jetty-adapter "1.2.2"]
                  [environ "0.5.0"]
+                 [com.akolov.enlive-reload "0.2.1" :refer [wrap-enlive-reload]]
+                 [org.clojure/tools.logging "0.3.1"]
                  [enlive "1.1.5"]
                  [org.clojure/data.csv "0.1.2"]]
   :plugins [

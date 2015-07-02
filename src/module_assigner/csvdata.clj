@@ -1,4 +1,5 @@
-(ns module-assigner.csvdata)
+(ns module-assigner.csvdata
+  (:require [clojure.tools.logging :as log]))
 
 (require '[clojure.data.csv :as csv]
          '[clojure.java.io :as io])
@@ -8,7 +9,7 @@
 (defn- parse-id
   "parse a numeric id at a given column. The line is for info only"
   [desc line col data]
-  (println "Parsing data", desc, line, col, data)
+  (log/debug "Parsing data", desc, line, col, data)
   (try
     (Integer/parseInt (.trim (nth data col)))
     (catch NumberFormatException e
@@ -31,7 +32,7 @@
 
 (defn- read-preference [mods line & args]
   "create a student preference from flat data: sid, name, course, p1-p4"
-  (println "read prefs" mods line args)
+  (log/debug "read prefs" mods line args)
   (defn find-mod [desc col]
     (let [mod
           (first (filter #(= (:id %) (parse-id desc line col args)) mods))]
@@ -77,6 +78,6 @@
   (let [
         data (sort-by #(:id (first %)) (by-students (:assignments board)))
         swriter (new java.io.StringWriter)]
-    (csv/write-csv swriter (map assigns-to-data (seq data)))
+    (csv/write-csv swriter (map assigns-to-data data))
    (.toString swriter)))
 

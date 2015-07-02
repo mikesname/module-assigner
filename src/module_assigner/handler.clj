@@ -5,6 +5,7 @@
   (:require [compojure.core :refer :all]
             [compojure.route :as route]
             [ring.util.response :as r]
+            [com.akolov.enlive-reload :refer :all]
             [ring.middleware.defaults :refer [wrap-defaults site-defaults]]
             [ring.middleware [multipart-params :as mp]]
             [clojure.java.io :as io]))
@@ -16,7 +17,7 @@
   [:title] (content title)
   [:.main] (content body))
 
-(defsnippet index-t "module-assigner/index.html" [:div.article] [] identity)
+(defsnippet step1-t "module-assigner/step1.html" [:div.article] [] identity)
 
 (defsnippet module-snippet "module-assigner/step2.html" 
   [:#modules :tbody [:tr first-of-type]]
@@ -53,7 +54,7 @@
   [:input#module-data] (set-attr :value modcsv)
   [:#modules :tbody] (content (module-snippet modules)))
 
-(defsnippet step2-error "module-assigner/index.html" [:form] [error]
+(defsnippet step2-error "module-assigner/step1.html" [:form] [error]
   [:.modules-file] (add-class "error")
   [:.modules-file :.form-errors] (content error))
 
@@ -128,7 +129,7 @@
 
 
 (defroutes app-routes
-  (GET "/" [] (render-page "Module Assigner" (index-t)))
+  (GET "/" [] (render-page "Module Assigner" (step1-t)))
 
   (POST "/step2" {:keys [params]}
         (let [{:keys [tempfile filename]} (get params :file)]
@@ -153,5 +154,7 @@
   (route/not-found "Not Found"))
 
 (def app
-  (wrap-defaults app-routes (assoc-in site-defaults [:security :anti-forgery] false)))
+  (wrap-enlive-reload
+    (wrap-defaults app-routes (assoc-in site-defaults [:security :anti-forgery] false))))
+
 
