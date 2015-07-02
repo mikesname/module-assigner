@@ -2,16 +2,16 @@
   :description "A toy project for assigning students to course modules"
   :url "https://github.com/mikesname/module-assigner"
   :min-lein-version "2.0.0"
-  :dependencies [[org.clojure/clojure "1.6.0"]
-                 [compojure "1.3.1"]
+  :dependencies [[org.clojure/clojure "1.7.0"]
+                 [org.clojure/tools.logging "0.3.1"]
+                 [org.clojure/data.csv "0.1.2"]
+                 [compojure "1.3.4"]
                  [ring/ring-defaults "0.1.2"]
                  [ring/ring-jetty-adapter "1.2.2"]
                  [environ "0.5.0"]
-                 [com.akolov.enlive-reload "0.2.1" :refer [wrap-enlive-reload]]
                  [org.apache.httpcomponents/httpmime "4.5"] 
-                 [org.clojure/tools.logging "0.3.1"]
                  [enlive "1.1.5"]
-                 [org.clojure/data.csv "0.1.2"]]
+                 [com.akolov.enlive-reload "0.2.1" :refer [wrap-enlive-reload]]]
   :plugins [
             [lein-ring "0.8.13"]
             [environ/environ.lein "0.2.1"]]
