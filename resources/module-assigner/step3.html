@@ -1,75 +1,81 @@
 <div class="article">
     <form action="/download" method="POST">
-        <input type="hidden" name="modcsv" id="module-data" value="" />
-        <h2>Modules:</h2>
-        <table id="modules" class="sheet-table">
-            <thead>
+        <section id="modules-section">
+            <h2>Modules:</h2>
+            <input type="hidden" name="modcsv" id="module-data" value="" />
+            <table id="modules" class="sheet-table">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Name</th>
+                        <th>Course</th>
+                    </tr>
+                </thead>
+                <tbody>
                 <tr>
-                    <th>#</th>
-                    <th>Name</th>
-                    <th>Course</th>
+                    <td>1</td>
+                    <td>Placeholder</td>
+                    <td>Data</td>
                 </tr>
-            </thead>
-            <tbody>
-            <tr>
-                <td>1</td>
-                <td>Placeholder</td>
-                <td>Data</td>
-            </tr>
-            </tbody>
-        </table>
-
-        <h2>Student preferences:</h2>
-        <input type="hidden" name="prefcsv" id="preference-data" value="" />
-        <table id="preferences" class="sheet-table">
-            <thead>
+                </tbody>
+            </table>
+        </section>
+        <section id="preferences-section">
+            <h2>Student preferences:</h2>
+            <input type="hidden" name="prefcsv" id="preference-data" value="" />
+            <table id="preferences" class="sheet-table">
+                <thead>
+                    <tr>
+                        <th>Module</th>
+                        <th>Students</th>
+                    </tr>
+                </thead>
+                <tbody>
                 <tr>
-                    <th>Module</th>
-                    <th>Students</th>
+                    <td>Placeholder</td>
+                    <td>Data</td>
                 </tr>
-            </thead>
-            <tbody>
-            <tr>
-                <td>Placeholder</td>
-                <td>Data</td>
-            </tr>
-            </tbody>
-        </table>
-
-        <h2>Calculated assignments:</h2>
-        <table id="assignments" class="sheet-table">
-            <thead>
+                </tbody>
+            </table>
+        </section>
+        <section id="assignments-section">
+            <h2>Calculated assignments:</h2>
+            <table id="assignments" class="sheet-table">
+                <thead>
+                    <tr>
+                        <th>Module</th>
+                        <th>Students</th>
+                    </tr>
+                </thead>
+                <tbody>
                 <tr>
-                    <th>Module</th>
-                    <th>Students</th>
+                    <td>Placeholder</td>
+                    <td>Data</td>
                 </tr>
-            </thead>
-            <tbody>
-            <tr>
-                <td>Placeholder</td>
-                <td>Data</td>
-            </tr>
-            </tbody>
-        </table>
+                </tbody>
+            </table>
+        </section>
+        <section id="moves-section">
 
-        <h2>Students who were reassigned from their preferences:</h2>
-        <table id="moves" class="sheet-table">
-            <thead>
+            <h2>Students who were reassigned from their preferences:</h2>
+            <table id="moves" class="sheet-table">
+                <thead>
+                    <tr>
+                        <th>Student</th>
+                        <th>From Module</th>
+                        <th>To Module</th>
+                    </tr>
+                </thead>
+                <tbody>
                 <tr>
-                    <th>Student</th>
-                    <th>From Module</th>
-                    <th>To Module</th>
+                    <td>Some</td>
+                    <td>Placeholder</td>
+                    <td>Data</td>
                 </tr>
-            </thead>
-            <tbody>
-            <tr>
-                <td>Some</td>
-                <td>Placeholder</td>
-                <td>Data</td>
-            </tr>
-            </tbody>
-        </table>
+                </tbody>
+            </table>
 
-        <button type="submit">Download Result CSV</button>
+            <button type="submit">Download Result CSV</button>
+        </section>
     </form>
 </div>

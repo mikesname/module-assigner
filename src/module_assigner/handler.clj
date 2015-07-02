@@ -44,11 +44,10 @@
 (defsnippet moves-snippet "module-assigner/step3.html" 
   [:#moves :tbody [:tr first-of-type]]
   [moves]
-  (when (not (empty? moves))
-    [:tr] (clone-for [move moves]
-                     [:tr [:td (nth-of-type 1)]] (content (:name (:student move)))
-                     [:tr [:td (nth-of-type 2)]] (content (:name (:from move)))
-                     [:tr [:td (nth-of-type 3)]] (content (:name (:to move))))))
+  [:tr] (clone-for [move moves]
+                   [:tr [:td (nth-of-type 1)]] (content (:name (:student move)))
+                   [:tr [:td (nth-of-type 2)]] (content (:name (:from move)))
+                   [:tr [:td (nth-of-type 3)]] (content (:name (:to move)))))
 
 (defsnippet step2-t "module-assigner/step2.html" [:form] [modules modcsv]
   [:input#module-data] (set-attr :value modcsv)
@@ -69,6 +68,7 @@
                            (solved-assignments-snippet 
                              (:assignments solved)))
   [:#moves :tbody] (content (moves-snippet (:moves solved))))
+
 
 (defsnippet step3-error "module-assigner/step2.html" [:form] [modules modcsv error]
   [:input#module-data] (set-attr :value modcsv)
@@ -156,5 +156,4 @@
 (def app
   (wrap-enlive-reload
     (wrap-defaults app-routes (assoc-in site-defaults [:security :anti-forgery] false))))
-
 

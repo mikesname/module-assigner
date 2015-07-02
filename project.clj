@@ -19,4 +19,5 @@
              :dev {:dependencies [[javax.servlet/servlet-api "2.5"]
                         [ring-mock "0.1.5"]]}}
   :uberjar-name "module-assigner-standalone.jar"
-  :hooks [environ.leiningen.hooks])
+  :hooks [environ.leiningen.hooks]
+  :resource-paths ["resources" "test/resources"])
