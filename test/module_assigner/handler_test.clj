@@ -6,14 +6,16 @@
 
 (defn- module-mp-data []
   (let [data (slurp (-> "modules.csv" io/resource io/file))]
-    (str "--AAAAAAAA\n"
-        "content-disposition: form-data; name=\"file\"; filename=\"modules.csv\"\n"
-        "Content-Type: text/csv"
-        "Content-transfer-encoding: binary" 
-        "\n"
+    (apply str (interpose "\r\n" [
+        "--12345678"
+        "Content-Disposition: form-data; name=\"test\"\r\n"
+        "test"                                  
+        "--12345678"
+        "Content-Disposition: form-data; name=\"file\"; filename=\"modules.csv\""
+        "Content-Type: text/plain\r\n"
         data
-        "\n"
-        "--AAAAAAAA\n")))
+        "--12345678--"
+        ""]))))
 
 (deftest test-app
   (testing "index route"
@@ -21,11 +23,9 @@
       (is (= (:status response) 200))
       (is (.contains (apply str (:body response)) "Step 1"))))
 
-  (testing "step 1"    
-    (let [response (app (-> (mock/request :post "/step2")
-                            (mock/content-type "multipart/form-data, boundary=AAAAAAAA")       
-                            (mock/body (module-mp-data))))]
-      (println (:body response))
+  (testing "step 1"
+    (let [response (app (-> (mock/request :post "/step2" (module-mp-data))
+                            (mock/content-type "multipart/form-data; boundary=12345678")))]
       (is (= (:status response) 200))
       (is (.contains (apply str (:body response)) "Step 2"))))
 
