@@ -70,6 +70,13 @@
     (map-indexed (partial apply read-preference mods) (csv/read-csv reader))))
 
 (defn write-results
-  "write results to a csv"
-  [results])
+  "write results to a csv, one record per student"
+  [board]
+  (defn assigns-to-data [[student modules]]
+    (into [(str (:id student)) (:name student)] (map #(str (:id %))  modules))) 
+  (let [
+        data (sort-by #(:id (first %)) (by-students (:assignments board)))
+        swriter (new java.io.StringWriter)]
+    (csv/write-csv swriter (map assigns-to-data (seq data)))
+   (.toString swriter)))
 

@@ -2,7 +2,8 @@
   (:require [clojure.test :refer :all] [clojure.java.io :as io])
   (:use module-assigner.csvdata))
 
-(use '[module-assigner.assigner :refer :all])
+(use '[module-assigner.assigner :refer :all]
+     '[module-assigner.assigner-test :refer :all])
 
 (def test-module-data-1
   (str
@@ -80,5 +81,17 @@
                     (catch clojure.lang.ExceptionInfo e (ex-data e)))]
       (is (= {:line 0 :column 6 :description "choice 4"} info)))))
 
-
+(deftest test-write-results
+  (testing "Writing CSV data results"
+    (let [board (init-board-with-modules test-modules test-preferences module-cap)
+          out (str (clojure.string/join "\n"
+                   ["8,Laura,1,2"
+                    "7,David,1,2"
+                    "6,Linda,1,2"
+                    "5,Mark,1,2"
+                    "4,Sue,1,2"
+                    "3,Fred,1,2"
+                    "2,Jane,1,2"
+                    "1,Bob,1,2"]) "\n")]
+     (is (= out (write-results board))))))
 

@@ -56,6 +56,18 @@
     {}
     assignments))
 
+(defn by-students [assignments]
+  "turn a list of assignments into a map of student -> seq(modules)"
+  (reduce
+    (fn [s assignment]
+      (let [module (:module assignment) student (:student assignment)]
+        (let [sset (if (contains? s student)
+                     (conj (get s student) module)
+                     #{module})]
+          (assoc s student sset))))
+    {}
+    assignments))
+
 (defn init-board [preferences assignments cap]
   (->Board
     (into [] (keys (by-modules assignments)))
@@ -119,6 +131,51 @@
   "get modules still not at capacity"
   (filter #(< (module-count assignments (:module %)) cap) modprefs))
 
+(defn format-assignment [assign preferences]
+  (let [student (:student assign) module (:module assign)]
+    (format "%-10s %-5s : %-15s (choice %d try %d) : %s" 
+          (:name student)
+          (str "(" (-> student :course :name) ")")
+          (:name module)
+          (:choice assign)
+          (:try assign)
+          (into [] (map :name (modules-for-student preferences student))))))
+
+(defn format-module-count [module students] 
+  (format "%-10s : %d" (:name module) (count students)))
+
+(defn print-solution [board]
+  "print out a set of assignments in a readable way"
+  (let [assignments (:assignments board)
+        preferences (:preferences board)]
+    (doseq [f (sort-by (fn [a] (-> a :student :name)) assignments)]
+      (println (format-assignment f preferences)))))
+
+(defn print-report [board]
+  "print out details of the current state"
+  (let [assignments (:assignments board)
+        preferences (:preferences board)
+        iteration (count (:moves board))
+        cap (:cap board)]
+    (print-solution board)
+    (println)
+    (doseq [[m s] (by-modules assignments)] (println (format-module-count m s)))
+    (println)
+    (println "Over-cap:  " (count (over-cap-assignments assignments cap)))
+    (println "Iteration: " iteration)
+    (println)))
+
+(defn print-moves [board]
+  """print a report of which students have been reassigned
+  from their initial preferences"""
+  (let [moves (:moves board) preferences (:preferences board)]
+    (doseq [move moves]
+      (let [student (:student move) from (:from move) to (:to move)]
+        (println (format "Moved student %s from %s to %s"
+                 (:name student)
+                 (:name from)
+                 (:name to)))))))
+
 (defn remaining-preferences [assignments preferences student cap]
   "get the remaining preferences for a given student"
   (let [
@@ -140,11 +197,18 @@
         ;;(println "Undercap: " (map #(-> % :module :name) undercap))
         undercap))))
 
+(defn- pick-random-slot [assignments preferences student]
+  "given that none of a student's preferences can be fulfilled, pick a random slot for them."
+  ;; TODO
+  nil)
+
 (defn next-slot-candidate [assignments preferences assignment cap]
   "get the next best empty slot for a to-move assignment"
   (let [remaining (remaining-preferences assignments preferences (:student assignment) cap)]
     ;;(println "Remaining prefs for " (-> assignment :student :name) (map #(-> % :module :name) remaining))
-    (first remaining)))
+    (if (empty? remaining)
+      (pick-random-slot assignments preferences (:student assignment))
+      (first remaining))))
 
 (defn find-best-candidate [assignments candidates preferences cap]
   (loop [cands candidates]
@@ -194,51 +258,6 @@
         newassignments (move-student (:assignments board) (:preferences board) assign modpref)
         move (->Move (:student assign) (:module assign) (:module modpref))]
     (update-in (assoc board :assignments newassignments) [:moves] conj move)))
-
-(defn format-assignment [assign preferences]
-  (let [student (:student assign) module (:module assign)]
-    (format "%-10s %-5s : %-15s (choice %d try %d) : %s" 
-          (:name student)
-          (str "(" (-> student :course :name) ")")
-          (:name module)
-          (:choice assign)
-          (:try assign)
-          (into [] (map :name (modules-for-student preferences student))))))
-
-(defn format-module-count [module students] 
-  (format "%-10s : %d" (:name module) (count students)))
-
-(defn print-solution [board]
-  "print out a set of assignments in a readable way"
-  (let [assignments (:assignments board)
-        preferences (:preferences board)]
-    (doseq [f (sort-by (fn [a] (-> a :student :name)) assignments)]
-      (println (format-assignment f preferences)))))
-
-(defn print-report [board]
-  "print out details of the current state"
-  (let [assignments (:assignments board)
-        preferences (:preferences board)
-        iteration (count (:moves board))
-        cap (:cap board)]
-    (print-solution board)
-    (println)
-    (doseq [[m s] (by-modules assignments)] (println (format-module-count m s)))
-    (println)
-    (println "Over-cap:  " (count (over-cap-assignments assignments cap)))
-    (println "Iteration: " iteration)
-    (println)))
-
-(defn print-moves [board]
-  """print a report of which students have been reassigned
-  from their initial preferences"""
-  (let [moves (:moves board) preferences (:preferences board)]
-    (doseq [move moves]
-      (let [student (:student move) from (:from move) to (:to move)]
-        (println (format "Moved student %s from %s to %s"
-                 (:name student)
-                 (:name from)
-                 (:name to)))))))
 
 (defn solve [board]
   "attempt to solve over-cap preferences"

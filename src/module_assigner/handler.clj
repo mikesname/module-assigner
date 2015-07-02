@@ -4,6 +4,7 @@
                 first-of-type nth-of-type first-child do-> set-attr add-class sniptest at emit*]])
   (:require [compojure.core :refer :all]
             [compojure.route :as route]
+            [ring.util.response :as r]
             [ring.middleware.defaults :refer [wrap-defaults site-defaults]]
             [ring.middleware [multipart-params :as mp]]
             [clojure.java.io :as io]))
@@ -106,12 +107,23 @@
       (try    
         (let [prefcsv (clean-data file)
               prefs (read-preferences modules prefcsv)
-              solved (solve (init-board-with-modules modules prefs 1))]
+              solved (solve (init-board-with-modules modules prefs 10))]
           (print-report solved)
           (render-page "Result" (step3-t modules modcsv prefs prefcsv solved)))
         (catch clojure.lang.ExceptionInfo e
           (render-page "Error" (step3-error modules modcsv (.getMessage e)))))
       (render-page "Error" (step3-error modules modcsv "no file given")))))
+
+(defn send-result-csv [modcsv prefcsv]
+  (let [modules (read-modules modcsv)
+        prefs (read-preferences modules prefcsv)
+        solved (solve (init-board-with-modules modules prefs 10))]
+    (print-report solved)
+    (->                  
+      (r/response (write-results solved))
+      (r/header "Content-type" "text/csv; charset=utf-8")
+      (r/header "Content-disposition" "attachment; filename=module-assignments.csv"))))
+
     
 
 
@@ -126,6 +138,12 @@
         (let [{:keys [tempfile filename]} (get params :file)
               modcsv (get params :modcsv)]
           (upload-preferences tempfile filename modcsv)))
+
+  (POST "/download" {:keys [params]}
+        (let [
+              prefcsv (get params :prefcsv)
+              modcsv (get params :modcsv)]
+          (send-result-csv modcsv prefcsv)))
 
   ; this is an example POST file upload
   (POST "/upload"

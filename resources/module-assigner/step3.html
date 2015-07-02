@@ -1,6 +1,6 @@
 <h1>File upload successful!</h1>
 <h2>Here is a list of modules:</h2>
-<form action="/step4" method="POST" enctype="multipart/form-data">
+<form action="/download" method="POST">
     <input type="hidden" name="modcsv" id="module-data" value="" />
     <table id="modules">
         <thead>
@@ -36,6 +36,7 @@
         </tbody>
     </table>
 
+    <button type="submit">Download Result CSV</button>
     <h2>This is the calculated assignments:</h2>
     <table id="assignments">
         <thead>
