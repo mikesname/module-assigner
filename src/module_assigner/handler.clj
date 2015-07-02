@@ -82,6 +82,9 @@
 (defn render-page [title t]
   (page-t title t))
 
+(defn render-err [title t]
+  {:body (page-t title t) :status 400})
+
 (defn- clean-data [file]
   ;; TODO: Better way of reading file
   ;; and return ing a seq without slurping it.
@@ -98,8 +101,8 @@
       (let [csvstr (clean-data file) modules (read-modules csvstr)]
         (render-page "Step 2" (step2-t modules csvstr)))
       (catch clojure.lang.ExceptionInfo e
-        (render-page "Data Error" (step2-error (.getMessage e)))))
-    (render-page "Error" (step2-error "no file given"))))
+        (render-err "Data Error" (step2-error (.getMessage e)))))
+    (render-err "Error" (step2-error "no file given"))))
 
 (defn upload-preferences
   [file filename modcsv]
@@ -112,8 +115,8 @@
           (print-report solved)
           (render-page "Result" (step3-t modules modcsv prefs prefcsv solved)))
         (catch clojure.lang.ExceptionInfo e
-          (render-page "Error" (step3-error modules modcsv (.getMessage e)))))
-      (render-page "Error" (step3-error modules modcsv "no file given")))))
+          (render-err "Error" (step3-error modules modcsv (.getMessage e)))))
+      (render-err "Error" (step3-error modules modcsv "no file given")))))
 
 (defn send-result-csv [modcsv prefcsv]
   (let [modules (read-modules modcsv)
@@ -124,9 +127,6 @@
       (r/response (write-results solved))
       (r/header "Content-type" "text/csv; charset=utf-8")
       (r/header "Content-disposition" "attachment; filename=module-assignments.csv"))))
-
-    
-
 
 (defroutes app-routes
   (GET "/" [] (render-page "Module Assigner" (step1-t)))
