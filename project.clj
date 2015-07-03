@@ -23,4 +23,5 @@
   :uberjar-name "module-assigner-standalone.jar"
   :hooks [environ.leiningen.hooks]
   :resource-paths ["resources" "test/resources"]
-  :main module-assigner.cli)
+  :main module-assigner.cli
+  :aot [module-assigner.cli])
