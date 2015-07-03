@@ -144,7 +144,7 @@
           a2 (->Assignment module-xml student-2 0 0 1)
           ]
       (is (= (->ModulePreference module-python student-1 1)
-             (next-slot-candidate [a1 a2] [p1 p2] a1 module-cap))))))
+             (next-slot-candidate test-modules [a1 a2] [p1 p2] a1 module-cap))))))
 
 (deftest test-reassign-and-move
   (testing "Reassignment and move"

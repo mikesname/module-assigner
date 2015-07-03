@@ -127,7 +127,11 @@
     (let [modules (:modules p)]
       (map-indexed #(->ModulePreference %2 student %1) modules))))
 
-(defn under-cap-modules [assignments modprefs cap]
+(defn under-cap-modules [assignments modules cap]
+  "get modules still not at capacity"
+  (filter #(< (module-count assignments %) cap) modules))
+
+(defn under-cap-module-prefs [assignments modprefs cap]
   "get modules still not at capacity"
   (filter #(< (module-count assignments (:module %)) cap) modprefs))
 
@@ -188,7 +192,7 @@
                           (fn [mp] (not (some #(= (:module mp) %) current)))
                           modprefs))]
       (let [sorted (sort-by (juxt :choice #(module-count assignments (:module %)) ) rems)
-            undercap (under-cap-modules assignments sorted cap)]
+            undercap (under-cap-module-prefs assignments sorted cap)]
       ;; (let [sorted (sort-by #(module-count assignments (:module %)) rems)]
       ;;   (println "REMAINING, SORTED: " (-> student :name) (map #(-> % :module :name) sorted))
         ;;
@@ -197,37 +201,38 @@
         ;;(println "Undercap: " (map #(-> % :module :name) undercap))
         undercap))))
 
-(defn- pick-random-slot [assignments preferences student]
+(defn- pick-random-slot [modules assignments preferences student cap]
   "given that none of a student's preferences can be fulfilled, pick a random slot for them."
   ;; TODO
-  nil)
+  (under-cap-modules assignments modules cap))
 
-(defn next-slot-candidate [assignments preferences assignment cap]
+(defn next-slot-candidate [modules assignments preferences assignment cap]
   "get the next best empty slot for a to-move assignment"
   (let [remaining (remaining-preferences assignments preferences (:student assignment) cap)]
     ;;(println "Remaining prefs for " (-> assignment :student :name) (map #(-> % :module :name) remaining))
     (if (empty? remaining)
-      (pick-random-slot assignments preferences (:student assignment))
+      (pick-random-slot modules assignments preferences (:student assignment) cap)
       (first remaining))))
 
-(defn find-best-candidate [assignments candidates preferences cap]
+(defn find-best-candidate [modules assignments candidates preferences cap]
   (loop [cands candidates]
     ;;(println "Looking for best candidate in" (map #(-> % :module :name) assignments))
     (if (empty? cands)
       nil
       (let [assign (first cands)
-            modpref (next-slot-candidate assignments preferences assign cap)]
+            modpref (next-slot-candidate modules assignments preferences assign cap)]
         (if (nil? modpref)
           (recur (rest cands))
           [assign modpref])))))
 
 (defn reassign [board]
   "determine how to move someone from an over-cap module to the next best"
-  (let [assignments (:assignments board)
+  (let [modules (:modules board)
+        assignments (:assignments board)
         cap (:cap board)
         preferences (:preferences board)
         candidates (move-candidates assignments cap)]
-    (let [[assign modpref] (find-best-candidate assignments candidates preferences cap)]
+    (let [[assign modpref] (find-best-candidate modules assignments candidates preferences cap)]
       (when (nil? assign)
         (print-report board)
         (throw (ex-info "No move candidate found!" {:board board})))
@@ -264,8 +269,8 @@
   (loop [newboard board
          iteration 0]
     ;;(print-report assigns (:preferences board) (:cap board) iteration)
-    (if (> iteration 200)
-      (throw (Exception. "Over 200 iterations!"))
+    (if (> iteration max-tries)
+      (throw (Exception. (format "Over %d iterations!" max-tries)))
       (if (is-solved newboard)
         newboard
         (recur (move-step newboard) (inc iteration))))))
