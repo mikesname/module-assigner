@@ -69,7 +69,6 @@
                              (:assignments solved)))
   [:#moves :tbody] (content (moves-snippet (:moves solved))))
 
-
 (defsnippet step3-error "module-assigner/step2.html" [:form] [modules modcsv error]
   [:input#module-data] (set-attr :value modcsv)
   [:#modules :tbody] (content (module-snippet modules))
@@ -88,9 +87,8 @@
 (defn- clean-data [file]
   ;; TODO: Better way of reading file
   ;; and return ing a seq without slurping it.
-  ;; FIXME: System-dependent newlines
   (clojure.string/join
-    "\n"
+    \newline
     (filter #(not (clojure.string/blank? %))
           (clojure.string/split-lines (slurp file)))))
 

@@ -11,7 +11,7 @@
   [desc line col data]
   (log/debug "Parsing data", desc, line, col, data)
   (try
-    (Integer/parseInt (.trim (nth data col)))
+    (Integer/parseInt (nth data col))
     (catch NumberFormatException e
       (throw (ex-info (str (format "Bad data at line: %d, column %d ", line, col)
                            (format "attempting to read %s as a number", desc))
@@ -20,55 +20,76 @@
 
 (defn- read-module [line & args]
   "create a module from flat data: id, course id, mod-id, name"
-  (when (not (= 5 (count args)))
-    (throw (ex-info (str (format "Bad data at line: %d. " line)
-                                           "Module data should consist of: "
-                                           "id, course id, module id, module name")
-                    {:line line})))
-  (->Module
-    (parse-id "module id" line 0 args)
-    (nth args 4)
-    (->Course (nth args 1))))
+  (let [data (map #(.trim %) args)]
+    (when (not (= 5 (count data)))
+      (throw (ex-info (str (format "Bad data at line: %d. " line)
+                                             "Module data should consist of: "
+                                             "id, course id, module id, module name")
+                      {:line line})))
+    (->Module
+      (parse-id "module id" line 0 data)
+      (nth data 4)
+      (->Course (nth data 1)))))
 
 (defn- read-preference [mods line & args]
   "create a student preference from flat data: sid, name, course, p1-p4"
-  (log/debug "read prefs" mods line args)
-  (defn find-mod [desc col]
-    (let [mod
-          (first (filter #(= (:id %) (parse-id desc line col args)) mods))]
-      (if (nil? mod)
-        (throw (ex-info (str (format "Unknown module reference at line: %d, column %d ", line, col)
-                             (format "for %s", desc))
-                        {:line line :column col :description desc}))
-        mod)))
+  (let [data (map #(.trim %) args)] 
+    (log/debug "read prefs" mods line data)
 
-  (when (not (= 7 (count args)))
-    (throw (ex-info (str (format "Bad data at line: %d. " line)
-                                           "Preference data should consist of: "
-                                           "student id, student name, course id, "
-                                           "choice 1, choice 2, choice 3, choice 4")
-                    {:line line})))
-  (->Preference
-    (->Student 
-      (parse-id "student id", line, 0, args)
-      (nth args 1)
-      (->Course (nth args 2)))
-    [(find-mod "choice 1", 3)
-     (find-mod "choice 2", 4)
-     (find-mod "choice 3", 5)
-     (find-mod "choice 4", 6)]))
+    (defn find-mod [desc col]
+      (let [mod
+            (first (filter #(= (:id %) (parse-id desc line col data)) mods))]
+        (if (nil? mod)
+          (throw (ex-info (str (format "Unknown module reference at line: %d, column %d ", line, col)
+                               (format "for %s", desc))
+                          {:line line :column col :description desc}))
+          mod)))
+
+    (when (not (= 7 (count data)))
+      (throw (ex-info (str (format "Bad data at line: %d. " line)
+                                             "Preference data should consist of: "
+                                             "student id, student name, course id, "
+                                             "choice 1, choice 2, choice 3, choice 4")
+                      {:line line})))
+    (->Preference
+      (->Student 
+        (parse-id "student id", line, 0, data)
+        (nth args 1)
+        (->Course (nth data 2)))
+      [(find-mod "choice 1", 3)
+       (find-mod "choice 2", 4)
+       (find-mod "choice 3", 5)
+       (find-mod "choice 4", 6)])))
+
+(defn- filtered-data
+  "clean up the csv by removing blank lines"
+  [reader] 
+  (filter #(> (count %) 1) (csv/read-csv reader)))
+
+(defn- reader-from-file-path [path]
+  (io/reader path))
 
 (defn read-modules 
   "read a set of module data from a reader"
   [reader]
   (doall
-    (map-indexed (partial apply read-module) (csv/read-csv reader))))
+    (map-indexed (partial apply read-module) (filtered-data reader))))
+
+(defn read-modules-from-file
+  "read module data from a file path"
+  [path]
+  (read-modules (io/reader path)))
 
 (defn read-preferences
   "read a set of student preferences, given a set of modules"
   [mods reader]
   (doall
-    (map-indexed (partial apply read-preference mods) (csv/read-csv reader))))
+    (map-indexed (partial apply read-preference mods) (filtered-data reader))))
+
+(defn read-preferences-from-file
+  "read preferences data from a file path with the given modules"
+  [mods path]
+  (read-preferences mods (io/reader path)))
 
 (defn write-results
   "write results to a csv, one record per student"

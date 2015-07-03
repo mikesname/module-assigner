@@ -5,6 +5,7 @@
   :dependencies [[org.clojure/clojure "1.7.0"]
                  [org.clojure/tools.logging "0.3.1"]
                  [org.clojure/data.csv "0.1.2"]
+                 [org.clojure/tools.cli "0.3.1"]
                  [compojure "1.3.4"]
                  [ring/ring-defaults "0.1.2"]
                  [ring/ring-jetty-adapter "1.2.2"]
@@ -21,4 +22,5 @@
                         [ring-mock "0.1.5"]]}}
   :uberjar-name "module-assigner-standalone.jar"
   :hooks [environ.leiningen.hooks]
-  :resource-paths ["resources" "test/resources"])
+  :resource-paths ["resources" "test/resources"]
+  :main module-assigner.cli)
