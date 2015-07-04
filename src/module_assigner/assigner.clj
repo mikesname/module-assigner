@@ -10,7 +10,7 @@
 (defrecord Course [name])
 
 ;; A record representing a module to which a student can be assigned
-(defrecord Module [id name course])
+(defrecord Module [id name course term])
 
 ;; A record representing a student with a given course
 (defrecord Student [id name course])
@@ -274,4 +274,26 @@
       (if (is-solved newboard)
         newboard
         (recur (move-step newboard) (inc iteration))))))
+
+(defn combine-boards [board other]
+  "combine two boards"
+  (->Board
+    (concat (:modules board) (:modules other))
+    (concat (:preferences board) (:preferences other))
+    (concat (:assignments board) (:assignments other))
+    (concat (:moves board) (:moves other))
+    (:cap board)))
+
+(defn calculate-for-term [modules preferences per-module term]
+  "solve for a particular term"
+  (let [mf (fn [m] (= (:term m) term))
+        pf (fn [p] (assoc p :modules (filter mf (:modules p))))
+        mt (filter mf modules)
+        pt (map pf preferences)]
+    (solve (init-board-with-modules mt pt per-module))))
+
+(defn calculate-terms [modules preferences per-module terms]
+  (let [boards (map (fn [t] (calculate-for-term modules preferences per-module t)) terms)]
+    (reduce combine-boards boards)))
+
 

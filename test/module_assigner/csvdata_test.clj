@@ -20,10 +20,10 @@
 (deftest test-read-modules
   (testing "Reading Module CSV"
     (let [data [
-                (->Module 1 "XML" (->Course "DH"))
-                (->Module 2 "Python" (->Course "DH"))
-                (->Module 3 "Metadata" (->Course "DAM"))
-                (->Module 4 "DigiPres" (->Course "DAM"))]]
+                (->Module 1 "XML" (->Course "DH") 1)
+                (->Module 2 "Python" (->Course "DH") 1)
+                (->Module 3 "Metadata" (->Course "DAM") 1)
+                (->Module 4 "DigiPres" (->Course "DAM") 1)]]
       (is (= data (read-modules test-module-data-1))))))
 
 (deftest test-read-modules-with-error-at-line
@@ -45,10 +45,10 @@
 
 (deftest test-read-preferences
   (testing "Reading Preference CSV"
-    (let [mod1 (->Module 1 "XML" (->Course "DH"))
-          mod2 (->Module 2 "Python" (->Course "DH"))
-          mod3 (->Module 3 "Metadata" (->Course "DAM"))
-          mod4 (->Module 4 "DigiPres" (->Course "DAM"))
+    (let [mod1 (->Module 1 "XML" (->Course "DH") 1)
+          mod2 (->Module 2 "Python" (->Course "DH") 1)
+          mod3 (->Module 3 "Metadata" (->Course "DAM") 1)
+          mod4 (->Module 4 "DigiPres" (->Course "DAM") 1)
           allmods [mod1 mod2 mod3 mod4]
           test-prefs [
                       (->Preference
@@ -84,7 +84,7 @@
 (deftest test-write-results
   (testing "Writing CSV data results"
     (let [board (init-board-with-modules test-modules test-preferences module-cap)
-          out (str (clojure.string/join "\n"
+          out (str (clojure.string/join \newline
                    [
                     "1,Bob,1,2"
                     "2,Jane,1,2"

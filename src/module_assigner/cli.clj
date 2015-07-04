@@ -40,7 +40,7 @@
     (try 
       (let [modules (read-modules-from-file (first arguments))
             preferences (read-preferences-from-file modules (second arguments))]
-        (let [solved (solve (init-board-with-modules modules preferences (:per-module options)))]
+        (let [solved (solve (calculate-terms modules preferences (:per-module options) (range 1 3)))]
           (print (write-results solved))))
       (catch java.io.FileNotFoundException e
         (exit 2 (error-msg [(.getMessage e)]))))))

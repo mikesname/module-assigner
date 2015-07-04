@@ -29,7 +29,8 @@
     (->Module
       (parse-id "module id" line 0 data)
       (nth data 4)
-      (->Course (nth data 1)))))
+      (->Course (nth data 1))
+      (parse-id "term" line 2 data))))
 
 (defn- read-preference [mods line & args]
   "create a student preference from flat data: sid, name, course, p1-p4"
@@ -95,7 +96,7 @@
   "write results to a csv, one record per student"
   [board]
   (defn assigns-to-data [[student modules]]
-    (into [(str (:id student)) (:name student)] (map #(str (:id %))  modules))) 
+    (into [(str (:id student)) (:name student)] (sort (map #(str (:id %))  modules)))) 
   (let [
         data (sort-by #(:id (first %)) (by-students (:assignments board)))
         swriter (new java.io.StringWriter)]

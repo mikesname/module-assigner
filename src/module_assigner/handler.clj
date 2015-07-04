@@ -25,7 +25,8 @@
   [:tr] (clone-for [module modules]
                    [:tr [:td (nth-of-type 1)]] (content (str (:id module)))
                    [:tr [:td (nth-of-type 2)]] (content (:name module))
-                   [:tr [:td (nth-of-type 3)]] (content (:name (:course module)))))
+                   [:tr [:td (nth-of-type 3)]] (content (str (:term module)))
+                   [:tr [:td (nth-of-type 4)]] (content (:name (:course module)))))
 
 (defsnippet assignments-snippet "module-assigner/step3.html" 
   [:#preferences :tbody [:tr first-of-type]]
@@ -101,7 +102,7 @@
       (try    
         (let [prefcsv (slurp file)
               prefs (read-preferences modules prefcsv)
-              solved (solve (init-board-with-modules modules prefs 10))]
+              solved (calculate-terms modules prefs 10 (range 1 3))]
           (print-report solved)
           (render-page "Result" (step3-t modules modcsv prefs prefcsv solved)))
         (catch clojure.lang.ExceptionInfo e
@@ -111,7 +112,7 @@
 (defn send-result-csv [modcsv prefcsv]
   (let [modules (read-modules modcsv)
         prefs (read-preferences modules prefcsv)
-        solved (solve (init-board-with-modules modules prefs 10))]
+        solved (solve (calculate-terms modules prefs 10 (range 1 3)))]
     (print-report solved)
     (->                  
       (r/response (write-results solved))
