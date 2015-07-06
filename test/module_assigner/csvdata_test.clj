@@ -20,10 +20,10 @@
 (deftest test-read-modules
   (testing "Reading Module CSV"
     (let [data [
-                (->Module 1 "XML" (->Course "DH") 1)
-                (->Module 2 "Python" (->Course "DH") 1)
-                (->Module 3 "Metadata" (->Course "DAM") 1)
-                (->Module 4 "DigiPres" (->Course "DAM") 1)]]
+                (->Module "1" "XML" (->Course "DH") 1)
+                (->Module "2" "Python" (->Course "DH") 1)
+                (->Module "3" "Metadata" (->Course "DAM") 1)
+                (->Module "4" "DigiPres" (->Course "DAM") 1)]]
       (is (= data (read-modules test-module-data-1))))))
 
 (deftest test-read-modules-with-error-at-line
@@ -38,24 +38,24 @@
 (deftest test-read-modules-with-error-at-line
   (testing "Reading Module CSV with bad id"
     (let [badcsv (str
-            "bad,DH,1,M1,XML" \newline)
+            ",DH,1,M1,XML" \newline)
           info (try (read-modules badcsv)
                     (catch clojure.lang.ExceptionInfo e (ex-data e)))]
       (is (= {:line 0 :column 0 :description "module id"} info)))))
 
 (deftest test-read-preferences
   (testing "Reading Preference CSV"
-    (let [mod1 (->Module 1 "XML" (->Course "DH") 1)
-          mod2 (->Module 2 "Python" (->Course "DH") 1)
-          mod3 (->Module 3 "Metadata" (->Course "DAM") 1)
-          mod4 (->Module 4 "DigiPres" (->Course "DAM") 1)
+    (let [mod1 (->Module "1" "XML" (->Course "DH") 1)
+          mod2 (->Module "2" "Python" (->Course "DH") 1)
+          mod3 (->Module "3" "Metadata" (->Course "DAM") 1)
+          mod4 (->Module "4" "DigiPres" (->Course "DAM") 1)
           allmods [mod1 mod2 mod3 mod4]
           test-prefs [
                       (->Preference
-                                    (->Student 1 "Bob" (->Course "DH"))
+                                    (->Student "1" "Bob" (->Course "DH"))
                                     [mod1 mod2 mod3 mod4])
                       (->Preference
-                                    (->Student 2 "Jane" (->Course "DH"))
+                                    (->Student "2" "Jane" (->Course "DH"))
                                     [mod4 mod3 mod2 mod1])]]
       (is (= test-prefs (read-preferences allmods test-preference-data-1))))))
 
@@ -64,7 +64,7 @@
     ;; NB: Line/column data are 0-indexed
     (let [badcsv (str
             "1,Bob,DH,1,2,3,4" \newline
-            "2,Jane,DH,?,2,3,4" \newline)
+            "2,Jane,DH,,2,3,4" \newline)
           mods (read-modules test-module-data-1)
           info (try (read-preferences mods badcsv)
                     (catch clojure.lang.ExceptionInfo e (ex-data e)))]

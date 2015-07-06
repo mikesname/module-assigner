@@ -7,19 +7,29 @@
 (use '[module-assigner.assigner :refer :all])
 
 (defn- parse-id
-  "parse a numeric id at a given column. The line is for info only"
+  "parse an id at a given column. The line is for info only"
   [desc line col data]
   (log/debug "Parsing data", desc, line, col, data)
+  (let [id (.trim (nth data col))]
+    (if (clojure.string/blank? id)
+      (throw (ex-info (str (format "Bad id %s at line: %d, column %d. " desc line col)
+                                             "Cannot be empty/blank")
+                       {:line line :column col :description desc}))
+      id)))
+
+(defn- parse-int-id
+  "parse an integer id at a given column. The line is for info only"
+  [desc line col data]
   (try
-    (Integer/parseInt (nth data col))
+    (Integer/parseInt (parse-id desc line col data))
     (catch NumberFormatException e
-      (throw (ex-info (str (format "Bad data at line: %d, column %d ", line, col)
-                           (format "attempting to read %s as a number", desc))
-                      {:line line :column col :description desc})))))
+      (throw (ex-info (str (format "Bad id %s at line: %d, column %d" desc line col)
+                                           "Should be an integer number"))
+                       {:line line :column col :description desc}))))
 
-
-(defn- read-module [line & args]
+(defn- read-module
   "create a module from flat data: id, course id, mod-id, name"
+  [line & args] 
   (let [data (map #(.trim %) args)]
     (when (not (= 5 (count data)))
       (throw (ex-info (str (format "Bad data at line: %d. " line)
@@ -30,10 +40,11 @@
       (parse-id "module id" line 0 data)
       (nth data 4)
       (->Course (nth data 1))
-      (parse-id "term" line 2 data))))
+      (parse-int-id "term" line 2 data))))
 
-(defn- read-preference [mods line & args]
+(defn- read-preference
   "create a student preference from flat data: sid, name, course, p1-p4"
+  [mods line & args]
   (let [data (map #(.trim %) args)] 
     (log/debug "read prefs" mods line data)
 

@@ -28,10 +28,10 @@
   student-7
   student-8])
 
-(def module-xml (->Module 1 "XML"  course-dh 1))
-(def module-python (->Module 2 "Python"  course-dh 1))
-(def module-metadata (->Module 3 "Metadata"  course-dam 1))
-(def module-digipres (->Module 4 "DigiPres"  course-dam 1))
+(def module-xml (->Module "1" "XML"  course-dh 1))
+(def module-python (->Module "2" "Python"  course-dh 1))
+(def module-metadata (->Module "3" "Metadata"  course-dam 1))
+(def module-digipres (->Module "4" "DigiPres"  course-dam 1))
 
 (def test-modules [
   module-xml
