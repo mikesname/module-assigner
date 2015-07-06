@@ -8,6 +8,8 @@
         'org.apache.http.entity.ContentType
         'java.io.ByteArrayOutputStream)
 
+(def module-cap "10")
+
 (defn- build-multipart [params file]
   (let [builder (MultipartEntityBuilder/create)]
     (doseq [[key value] params]
@@ -31,7 +33,7 @@
 
   (testing "step 1"
     (let [module-data (slurp (-> "modules.csv" io/resource io/file))
-          response (app (-> (mock/request :post "/step2" (build-multipart {} {
+          response (app (-> (mock/request :post "/step2" (build-multipart {:modcap module-cap} {
                                                                              :name "file"
                                                                              :filename "modules.csv"
                                                                              :data module-data}))
@@ -48,7 +50,7 @@
     (let [
           module-data (slurp (-> "modules.csv" io/resource io/file))
           preferences-data (slurp (-> "preferences.csv" io/resource io/file))
-          mp (build-multipart {:modcsv module-data} {
+          mp (build-multipart {:modcsv module-data :modcap module-cap} {
                              :name "file"
                              :filename "preferences.csv"
                              :data preferences-data})]
