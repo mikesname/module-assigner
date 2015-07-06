@@ -28,19 +28,24 @@
                    [:tr [:td (nth-of-type 3)]] (content (str (:term module)))
                    [:tr [:td (nth-of-type 4)]] (content (:name (:course module)))))
 
-(defsnippet assignments-snippet "module-assigner/step3.html" 
+(defsnippet preferences-snippet "module-assigner/step3.html" 
   [:#preferences :tbody [:tr first-of-type]]
-  [assignments]
+  [assignments cap]
   [:tr] (clone-for [[module students] (by-modules assignments)]
                    [:tr [:td (nth-of-type 1)]] (content (:name module))
-                   [:tr [:td (nth-of-type 2)]] (content (clojure.string/join ", " (map :name students)))))
+                   [:tr [:td (nth-of-type 2)]] (content 
+                                                 (if (> (count students) cap)
+                                                   (str (- (count students) cap)) 
+                                                   ""))
+                   [:tr [:td (nth-of-type 3)]] (content (clojure.string/join ", " (map :name students)))))
 
 (defsnippet solved-assignments-snippet "module-assigner/step3.html" 
   [:#assignments :tbody [:tr first-of-type]]
   [assignments]
   [:tr] (clone-for [[module students] (by-modules assignments)]
                    [:tr [:td (nth-of-type 1)]] (content (:name module))
-                   [:tr [:td (nth-of-type 2)]] (content (clojure.string/join ", " (map :name students)))))
+                   [:tr [:td (nth-of-type 2)]] (content (str (count students)))
+                   [:tr [:td (nth-of-type 3)]] (content (clojure.string/join ", " (map :name students)))))
 
 (defsnippet moves-snippet "module-assigner/step3.html" 
   [:#moves :tbody [:tr first-of-type]]
@@ -63,8 +68,8 @@
   [:input#preference-data] (set-attr :value prefcsv)
   [:#modules :tbody] (content (module-snippet modules))
   [:#preferences :tbody] (content 
-                           (assignments-snippet 
-                             (assign-initial prefs)))
+                           (preferences-snippet 
+                             (assign-initial prefs) (:cap solved)))
   [:#assignments :tbody] (content 
                            (solved-assignments-snippet 
                              (:assignments solved)))
