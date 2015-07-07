@@ -29,7 +29,7 @@
 
 (defn- read-module
   "create a module from flat data: id, course id, mod-id, name"
-  [line & args] 
+  [line & args]
   (let [data (map #(.trim %) args)]
     (when (not (= 5 (count data)))
       (throw (ex-info (str (format "Bad data at line: %d. " line)
@@ -45,7 +45,7 @@
 (defn- read-preference
   "create a student preference from flat data: sid, name, course, p1-p4"
   [mods line & args]
-  (let [data (map #(.trim %) args)] 
+  (let [data (map #(.trim %) args)]
     (log/debug "read prefs" mods line data)
 
     (defn find-mod [desc col]
@@ -64,7 +64,7 @@
                                              "choice 1, choice 2, choice 3, choice 4")
                       {:line line})))
     (->Preference
-      (->Student 
+      (->Student
         (parse-id "student id", line, 0, data)
         (nth args 1)
         (->Course (nth data 2)))
@@ -75,13 +75,13 @@
 
 (defn- filtered-data
   "clean up the csv by removing blank lines"
-  [reader] 
+  [reader]
   (filter #(> (count %) 1) (csv/read-csv reader)))
 
 (defn- reader-from-file-path [path]
   (io/reader path))
 
-(defn read-modules 
+(defn read-modules
   "read a set of module data from a reader"
   [reader]
   (doall
@@ -98,16 +98,39 @@
   (doall
     (map-indexed (partial apply read-preference mods) (filtered-data reader))))
 
+(defn read-preferences-alt
+  "read preferences in the alternate format
+    consisting of student id, name, and course
+    followed by numbers expressing preference for
+    modules in subsequent columns"
+  [mods reader]
+  (let [raw (map-indexed (fn [& args] args) (filtered-data reader))]
+    (let [[[_ & [titles & _]] & rows] raw
+          modidx (drop 3 titles)]
+
+      (defn lookup [[r data]]
+        (let [[sid & [name & [course & prefs]]] data
+          m (vals (into (sorted-map) (map-indexed (fn [i p]
+                         [p (nth modidx i)]) prefs)))]
+          (concat [r sid name course] m)))
+
+      (map (comp (partial apply read-preference mods) lookup) rows))))
+
 (defn read-preferences-from-file
   "read preferences data from a file path with the given modules"
   [mods path]
   (read-preferences mods (io/reader path)))
 
+(defn read-preferences-alt-from-file
+  "read alt-format preferences data from a file path with the given modules"
+  [mods path]
+  (read-preferences-alt mods (io/reader path)))
+
 (defn write-results
   "write results to a csv, one record per student"
   [board]
   (defn assigns-to-data [[student modules]]
-    (into [(str (:id student)) (:name student)] (sort (map #(str (:id %))  modules)))) 
+    (into [(str (:id student)) (:name student)] (sort (map #(str (:id %))  modules))))
   (let [
         data (sort-by #(:id (first %)) (by-students (:assignments board)))
         swriter (new java.io.StringWriter)]
