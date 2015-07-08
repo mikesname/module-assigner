@@ -104,11 +104,10 @@
 
       (defn lookup [[r data]]
         (let [[sid & [name & [course & prefs]]] data
-          m (into {} (map-indexed (fn [i p]
-                         [p (nth modidx i)]) prefs))
-          fm (into (sorted-map) (filter #(not= "" (first %)) m))]
-          (concat [r sid name course] (vals fm))))
-
+          m (map-indexed (fn [i p]
+                         [p (nth modidx i)]) prefs)
+          fm (filter #(not= "" (first %)) m)]
+          (concat [r sid name course] (map second (sort-by first fm)))))
       (map (comp (partial apply read-preference mods) lookup) rows))))
 
 (defn read-preferences-from-file
