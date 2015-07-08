@@ -64,11 +64,11 @@
     ;; NB: Line/column data are 0-indexed
     (let [badcsv (str
             "1,Bob,DH,m1,m2,m3,m4" \newline
-            "2,Jane,DH,,m2,m3,m4" \newline)
+            "2,Jane,DH,-,m2,m3,m4" \newline)
           mods (read-modules test-module-data-1)
           info (try (read-preferences mods badcsv)
                     (catch clojure.lang.ExceptionInfo e (ex-data e)))]
-      (is (= {:line 1 :column 3 :description "choice 1"} info)))))
+      (is (= {:line 1 :ref "-"} info)))))
 
 (deftest test-read-preferences-with-bad-module-reference
   (testing "Reading Preference CSV with bad module ref at line 1 col 7"
@@ -78,19 +78,19 @@
             "2,Jane,DH,m1,m2,m3,m4" \newline)
           mods (read-modules test-module-data-1)
           info (try (read-preferences mods badcsv)
-                    (catch clojure.lang.ExceptionInfo e (ex-data e)))]
-      (is (= {:line 0 :column 6 :description "choice 4"} info)))))
+                 (catch clojure.lang.ExceptionInfo e (ex-data e)))]
+      (is (= {:line 0 :ref "m5"} info)))))
 
 (deftest test-read-preferences-alt
   (testing "Reading alt preferences"
     (let [
           csv1 (str
                 "id,name,course,m1,m2,m3,m4" \newline
-                "1,Bob,DH,4,3,2,1" \newline
-                "2,Jane,DH,4,3,2,1" \newline)
+                "1,Bob,DH,1,2,," \newline
+                "2,Jane,DH,3,,1,2" \newline)
           csv2 (str
-                "1,Bob,DH,m4,m3,m2,m1" \newline
-                "2,Jane,DH,m4,m3,m2,m1" \newline)]
+                "1,Bob,DH,m1,m2" \newline
+                "2,Jane,DH,m3,m4,m1" \newline)]
       (let [result1 (read-preferences-alt test-modules csv1)
             result2 (read-preferences test-modules csv2)]
         (is (= result1 result2))))))

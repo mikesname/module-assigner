@@ -43,35 +43,29 @@
       (parse-int-id "term" line 2 data))))
 
 (defn- read-preference
-  "create a student preference from flat data: sid, name, course, p1-p4"
+  "create a student preference from flat data: sid, name, course, p1-pN"
   [mods line & args]
   (let [data (map #(.trim %) args)]
     (log/debug "read prefs" mods line data)
 
-    (defn find-mod [desc col]
+    (defn find-mod [modref]
       (let [mod
-            (first (filter #(= (:id %) (parse-id desc line col data)) mods))]
+            (first (filter #(= (:id %) modref) mods))]
         (if (nil? mod)
-          (throw (ex-info (str (format "Unknown module reference at line: %d, column %d ", line, col)
-                               (format "for %s", desc))
-                          {:line line :column col :description desc}))
+          (throw (ex-info (format "Unknown module reference '%s' at line: %d ", modref, line)
+                          {:line line :ref modref}))
           mod)))
 
-    (when (not (= 7 (count data)))
-      (throw (ex-info (str (format "Bad data at line: %d. " line)
-                                             "Preference data should consist of: "
-                                             "student id, student name, course id, "
-                                             "choice 1, choice 2, choice 3, choice 4")
-                      {:line line})))
+    (defn mod-list [modrefs]
+      (let [cleaned (filter #(not (clojure.string/blank? %)) modrefs)]
+        (map find-mod cleaned)))        
+
     (->Preference
       (->Student
         (parse-id "student id", line, 0, data)
         (nth args 1)
         (->Course (nth data 2)))
-      [(find-mod "choice 1", 3)
-       (find-mod "choice 2", 4)
-       (find-mod "choice 3", 5)
-       (find-mod "choice 4", 6)])))
+        (into [] (mod-list (drop 3 data))))))
 
 (defn- filtered-data
   "clean up the csv by removing blank lines"
@@ -110,9 +104,10 @@
 
       (defn lookup [[r data]]
         (let [[sid & [name & [course & prefs]]] data
-          m (vals (into (sorted-map) (map-indexed (fn [i p]
-                         [p (nth modidx i)]) prefs)))]
-          (concat [r sid name course] m)))
+          m (into {} (map-indexed (fn [i p]
+                         [p (nth modidx i)]) prefs))
+          fm (into (sorted-map) (filter #(not= "" (first %)) m))]
+          (concat [r sid name course] (vals fm))))
 
       (map (comp (partial apply read-preference mods) lookup) rows))))
 
