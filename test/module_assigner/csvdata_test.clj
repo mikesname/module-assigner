@@ -7,10 +7,10 @@
 
 (def test-module-data-1
   (str
-    "m1,DH,1,M1,XML" \newline
-    "m2,DH,1,M2,Python" \newline
-    "m3,DAM,1,M3,Metadata" \newline
-    "m4,DAM,1,M4,DigiPres" \newline))
+    "m1,DH,1,XML" \newline
+    "m2,DH,1,Python" \newline
+    "m3,DAM,1,Metadata" \newline
+    "m4,DAM,1,DigiPres" \newline))
 
 (def test-preference-data-1
   (str
@@ -29,19 +29,19 @@
 (deftest test-read-modules-with-error-at-line
   (testing "Reading Module CSV with error at line 3"
     (let [badcsv (str
-            "m1,DH,1,M1,XML" \newline
-            "m2,DH,1,M2,Python" \newline
-            "m3,DAM,M3,Metadata" \newline
-            "m4,DAM,1,M4,DigiPres" \newline)]
+            "m1,DH,1,XML" \newline
+            "m2,DH,1,Python" \newline
+            "m3,DAM,Metadata" \newline
+            "m4,DAM,1,DigiPres" \newline)]
       (is (thrown? clojure.lang.ExceptionInfo (read-modules badcsv))))))
 
 (deftest test-read-modules-with-error-at-line
   (testing "Reading Module CSV with bad id"
     (let [badcsv (str
-            ",DH,1,M1,XML" \newline)
+            ",DH,1,XML" \newline)
           info (try (read-modules badcsv)
                     (catch clojure.lang.ExceptionInfo e (ex-data e)))]
-      (is (= {:line 0 :column 0 :description "module id"} info)))))
+      (is (= {:line 0 :column 0 :description "id"} info)))))
 
 (deftest test-read-preferences
   (testing "Reading Preference CSV"

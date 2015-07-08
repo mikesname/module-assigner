@@ -1,11 +1,11 @@
-m1,DH,1,M1,XML
-m2,DH,1,M2,Python
-m3,DH,1,M3,Structured Data
-m4,DH,1,M4,XSLT
-m5,DH,1,M5,3D Visualisation
-m6,DAM,1,M6,Book publishing
-m7,DAM,1,M7,Metadata
-m8,DAM,1,M8,Digital Preservation
-m9,DAM,1,M9,Clouds & Crowds
-m10,DAM,1,M10,Systems & Architectures
+m1,DH,1,XML
+m2,DH,1,Python
+m3,DH,1,Structured Data
+m4,DH,1,XSLT
+m5,DH,1,3D Visualisation
+m6,DAM,1,Book publishing
+m7,DAM,1,Metadata
+m8,DAM,1,Digital Preservation
+m9,DAM,1,Clouds & Crowds
+m10,DAM,1,Systems & Architectures
 

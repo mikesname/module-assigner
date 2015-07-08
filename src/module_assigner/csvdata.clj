@@ -31,14 +31,14 @@
   "create a module from flat data: id, course id, mod-id, name"
   [line & args]
   (let [data (map #(.trim %) args)]
-    (when (not (= 5 (count data)))
+    (when (not (= 4 (count data)))
       (throw (ex-info (str (format "Bad data at line: %d. " line)
                                              "Module data should consist of: "
-                                             "id, course id, module id, module name")
+                                             "id, course id, module term, module name")
                       {:line line})))
     (->Module
-      (parse-id "module id" line 0 data)
-      (nth data 4)
+      (parse-id "id" line 0 data)
+      (nth data 3)
       (->Course (nth data 1))
       (parse-int-id "term" line 2 data))))
 
