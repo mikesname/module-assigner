@@ -1,36 +1,39 @@
 <div class="article">
     <form action="/assign" method="POST" enctype="multipart/form-data">
-        <section id="global-section">
-            <label>
-                Module capacity
-                <input id="module-cap" name="modcap" type="text" value="45" />
-            </label>
-        </section>
-
         <section id="modules-section">
             <h2>Step 1 - upload module data</h2>
-            <p>Upload the CSV file describing which modules are available for this term
-            and the courses to which they belong.</p>
+            <p>
+                Upload the CSV file describing which modules are available for this term
+                and the courses to which they belong.
+                <img class="example" alt="Example modules" src="img/modules-example.png" />
+            </p>
             <label class="modules-file">
                 Select file describing modules
                 <input name="modfile" type="file" size="20" />
-                <span class="form-errors"></span>
             </label>
         </section>
 
         <section id="preferences-section row">            
             <h2>Step 2 - upload student preference data</h2>
-            <p>Upload the CSV file describing the student module preferences</p>
+            <p>
+                Upload the CSV file describing the student module preferences.
+                <img class="example" alt="Example preferences" src="img/preferences-example.png" />
+            </p>
             <label class="preferences-file">
                 Select student module preferences
                 <input name="preffile" type="file" size="20" />
-                <span class="form-errors"></span>
             </label>
         </section>
 
+        <section id="global-section">
+            <h2>Step 3 - select module capacity</h2>
+            <input id="module-cap" name="modcap" type="text" value="45" />
+        </section>
+
         <section>
+            <div data-alert class="form-errors alert-box warning"></div>
             <hr />
-            <input type="submit" name="submit" value="submit" />
+            <button type="submit">Attempt to Calculate Assignments!</button>
         </section>
     </form>
 </div>

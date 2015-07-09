@@ -35,28 +35,45 @@
   [:#preferences :tbody [:tr first-of-type]]
   [assignments cap]
   [:tr] (clone-for [[module students] (by-modules assignments)]
-                   [:tr [:td (nth-of-type 1)]] (content (:name module))
-                   [:tr [:td (nth-of-type 2)]] (content 
-                                                 (if (> (count students) cap)
-                                                   (str (- (count students) cap)) 
-                                                   ""))
-                   [:tr [:td (nth-of-type 3)]] (content (clojure.string/join ", " (map :name students)))))
+                   [:tr [:td (nth-of-type 1)]] (content (:id module))
+                   [:tr [:td (nth-of-type 2)]] (content (:name module))
+                   [:tr [:td (nth-of-type 3)]] (content (str (:term module)))
+                   [:tr [:td (nth-of-type 4)]] (content (str (- cap (count students))))
+                   [:tr [:td (nth-of-type 5)]] (content (clojure.string/join ", " (map :name students)))))
 
 (defsnippet solved-assignments-snippet "module-assigner/results.html" 
   [:#assignments :tbody [:tr first-of-type]]
   [assignments]
   [:tr] (clone-for [[module students] (by-modules assignments)]
-                   [:tr [:td (nth-of-type 1)]] (content (:name module))
-                   [:tr [:td (nth-of-type 2)]] (content (str (count students)))
-                   [:tr [:td (nth-of-type 3)]] (content (clojure.string/join ", " (map :name students)))))
+                   [:tr [:td (nth-of-type 1)]] (content (:id module))
+                   [:tr [:td (nth-of-type 2)]] (content (:name module))
+                   [:tr [:td (nth-of-type 3)]] (content (str (:term module)))
+                   [:tr [:td (nth-of-type 4)]] (content (str (count students)))
+                   [:tr [:td (nth-of-type 5)]] (content (clojure.string/join ", " (map :name students)))))
 
 (defsnippet moves-snippet "module-assigner/results.html" 
   [:#moves :tbody [:tr first-of-type]]
-  [moves]
+  [moves preferences assignments]
   [:tr] (clone-for [move moves]
                    [:tr [:td (nth-of-type 1)]] (content (:name (:student move)))
-                   [:tr [:td (nth-of-type 2)]] (content (:name (:from move)))
-                   [:tr [:td (nth-of-type 3)]] (content (:name (:to move)))))
+                   [:tr [:td (nth-of-type 2)]] (content (:name (:course (:student move))))
+                   [:tr [:td (nth-of-type 3)]] (content (str (:term (:from move))))
+                   [:tr [:td (nth-of-type 4)]] (content (format "%s (%s)" (:id (:from move)) (:name (:from move))))
+                   [:tr [:td (nth-of-type 5)]] (content (format "%s (%s)" (:id (:to move)) (:name (:to move))))
+                   [:tr [:td (nth-of-type 6)]] (content 
+                                                 (clojure.string/join
+                                                   "; "
+                                                   (map
+                                                     #(-> % :module :name)
+                                                     (filter
+                                                       #(= (:term (:from move)) (:term (:module %)))
+                                                       (current-assignments-for assignments (:student move))))))
+                   [:tr [:td (nth-of-type 7)]] (content 
+                                                 (clojure.string/join
+                                                   "; "
+                                                   (map :name (modules-in-term
+                                                                (modules-for-student preferences (:student move))
+                                                                (:term (:from move))))))))
 
 (defsnippet results-t "module-assigner/results.html" [:form] [modules modcsv prefs prefcsv solved cap]
   [:input#module-cap] (set-attr :value cap)
@@ -69,7 +86,7 @@
   [:#assignments :tbody] (content 
                            (solved-assignments-snippet 
                              (:assignments solved)))
-  [:#moves :tbody] (content (moves-snippet (:moves solved))))
+  [:#moves :tbody] (content (moves-snippet (:moves solved) prefs (:assignments solved))))
 
 (defsnippet results-error "module-assigner/step1.html" [:form] [error cap]
   [:input#module-cap] (set-attr :value cap)
@@ -83,7 +100,9 @@
   (page-t title t))
 
 (defn render-err [title t]
-  {:body (render-page title t) :status 400})
+  {:status 400
+   :body (render-page title t)
+   :headers {"Content-type" "text/html"}})
 
 (defn upload-data
   [modfile modfilename preffile preffilename cap]
@@ -97,16 +116,18 @@
         (let [modcsv (slurp modfile)
               prefcsv (slurp preffile)
               modules (read-modules modcsv)
-              prefs (read-preferences modules prefcsv)
+              prefs (read-preferences-alt modules prefcsv)
               solved (calculate-terms modules prefs cap (range 1 3))]
+          (println "PREFS" prefs)
           (print-report solved)
           (render-page "Result" (results-t modules modcsv prefs prefcsv solved cap)))
         (catch clojure.lang.ExceptionInfo e
+          (println "ERROR:" e)
           (render-err "Error" (results-error (.getMessage e) cap))))))
 
 (defn send-result-csv [modcsv prefcsv cap]
   (let [modules (read-modules modcsv)
-        prefs (read-preferences modules prefcsv)
+        prefs (read-preferences-alt modules prefcsv)
         solved (solve (calculate-terms modules prefs cap (range 1 3)))]
     (print-report solved)
     (->                  
@@ -117,12 +138,14 @@
 (defroutes app-routes
   (GET "/" [] (render-page "Module Assigner" (step1-t)))
 
+  (GET "/assign" [] (r/redirect "/"))
   (POST "/assign" {:keys [params]}
         (let [{modfile :tempfile modfilename :filename} (get params :modfile)
               {preffile :tempfile preffilename :filename} (get params :preffile)              
               cap (module-cap-with-default (get params :modcap))]
           (upload-data modfile modfilename preffile preffilename cap)))
-  
+
+  (GET "/download" [] (r/redirect "/"))  
   (POST "/download" {:keys [params]}
         (let [prefcsv (get params :prefcsv)
               modcsv (get params :modcsv)

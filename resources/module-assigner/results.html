@@ -1,11 +1,5 @@
 <div class="article">
     <form action="/download" method="POST">
-        <section id="global-section">
-            <label>
-                Module capacity
-                <input id="module-cap" name="modcap" type="text" value="45" />
-            </label>
-        </section>
         <section id="modules-section">
             <h2>Modules:</h2>
             <input type="hidden" name="modcsv" id="module-data" value="" />
@@ -34,16 +28,20 @@
             <table id="preferences" class="sheet-table">
                 <thead>
                     <tr>
+                        <th>Module ID</th>
                         <th>Module</th>
+                        <th>Term</th>
                         <th>Over cap?</th>
                         <th>Students</th>
                     </tr>
                 </thead>
                 <tbody>
                 <tr>
-                    <td>Some</td>
                     <td>Placeholder</td>
-                    <td>Data</td>
+                    <td>Placeholder</td>
+                    <td>Placeholder</td>
+                    <td>Placeholder</td>
+                    <td>Placeholder</td>
                 </tr>
                 </tbody>
             </table>
@@ -53,16 +51,20 @@
             <table id="assignments" class="sheet-table">
                 <thead>
                     <tr>
+                        <th>Module ID</th>
                         <th>Module</th>
+                        <th>Term</th>
                         <th>Count</th>
                         <th>Students</th>
                     </tr>
                 </thead>
                 <tbody>
                 <tr>
-                    <td>Some</td>
                     <td>Placeholder</td>
-                    <td>Data</td>
+                    <td>Placeholder</td>
+                    <td>Placeholder</td>
+                    <td>Placeholder</td>
+                    <td>Placeholder</td>
                 </tr>
                 </tbody>
             </table>
@@ -74,19 +76,28 @@
                 <thead>
                     <tr>
                         <th>Student</th>
+                        <th>Course</th>
+                        <th>Term</th>
                         <th>From Module</th>
                         <th>To Module</th>
+                        <th>Assigned</th>
+                        <th>Preferences</th>
                     </tr>
                 </thead>
                 <tbody>
                 <tr>
-                    <td>Some</td>
                     <td>Placeholder</td>
-                    <td>Data</td>
+                    <td>Placeholder</td>
+                    <td>Placeholder</td>
+                    <td>Placeholder</td>
+                    <td>Placeholder</td>
+                    <td>Placeholder</td>
+                    <td>Placeholder</td>
                 </tr>
                 </tbody>
             </table>
 
+            <input id="module-cap" name="modcap" type="hidden" value="45" />
             <button type="submit">Download Result CSV</button>
         </section>
     </form>

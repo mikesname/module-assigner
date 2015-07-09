@@ -1,11 +1,12 @@
-(ns module-assigner.assigner)
+(ns module-assigner.assigner
+  (:require [clojure.tools.logging :as log]))
 
 (use '[clojure.set :only (difference)]
      '[clojure.string :only (join)])
 
 ;;(def module-cap 4)
 (def modules-per-student 2)
-(def max-tries 200)
+(def max-tries 600)
 
 (defrecord Course [name])
 
@@ -57,6 +58,11 @@
           (assoc m module sset))))
     {}
     assignments))
+
+(defn modules-in-term
+  "filter a list of modules by term"
+  [modules term]
+  (filter #(= term (:term %)) modules))
 
 (defn by-students
   "turn a list of assignments into a map of student -> seq(modules)"
@@ -208,22 +214,31 @@
         ;; (let [sorted (sort-by #(module-count assignments (:module %)) rems)]
         ;;   (println "REMAINING, SORTED: " (-> student :name) (map #(-> % :module :name) sorted))
         ;;
-        ;;(println "Capacity: " cap)
-        ;;(println "Sorted: " (map #(-> % :module :name) sorted))
-        ;;(println "Undercap: " (map #(-> % :module :name) undercap))
+        (println "Capacity: " cap)
+        (println "Sorted: " (map #(-> % :module :name) sorted))
+        (println "Undercap: " (map #(-> % :module :name) undercap))
         undercap))))
+
+(defn unassigned-preferences
+  "return a student's unassigned preferences"
+  [assignments preferences student]
+  (let [as (map :module (current-assignments-for assignments student))        
+        tf (fn [mp] (empty? (filter #(= (:module mp) %) as)))
+        all (preferences-for-student preferences student)
+        remaining (filter tf all)]
+    (log/debug "Picking random slot for" (:name student) remaining (map :name as) (map #(-> % :module :name) all))
+    remaining))
 
 (defn- pick-random-slot
   "given that none of a student's preferences can be fulfilled, pick a random slot for them."
   [modules assignments preferences student cap]
-  ;; TODO
-  (under-cap-modules assignments modules cap))
+  (unassigned-preferences assignments preferences student))
 
 (defn next-slot-candidate
   "get the next best empty slot for a to-move assignment"
   [modules assignments preferences assignment cap]
   (let [remaining (remaining-preferences assignments preferences (:student assignment) cap)]
-    ;;(println "Remaining prefs for " (-> assignment :student :name) (map #(-> % :module :name) remaining))
+    (println "Remaining prefs for " (-> assignment :student :name) (map #(-> % :module :name) remaining))
     (if (empty? remaining)
       (pick-random-slot modules assignments preferences (:student assignment) cap)
       (first remaining))))
@@ -258,12 +273,12 @@
 (defn move-student
   "move a student from an over-cap module to the next best"
   [assignments preferences assign modpref]
-  ;; (println (format "moving %s from %s (%d) to %s (%d)"
-  ;;                  (-> assign :student :name)
-  ;;                  (-> assign :module :name)
-  ;;                  (module-count assignments (-> assign :module))
-  ;;                  (-> modpref :module :name)
-  ;;                  (module-count assignments (-> modpref :module))))
+   (println (format "moving %s from %s (%d) to %s (%d)"
+                    (-> assign :student :name)
+                    (-> assign :module :name)
+                    (module-count assignments (-> assign :module))
+                    (-> modpref :module :name)
+                    (module-count assignments (-> modpref :module))))
   (let [remassignments (into [] (remove #(= assign %) assignments))
         reassignment (->Assignment (:module modpref) (:student assign) (:choice modpref) (+ 1 (:try assign)) (:tag assign))
         ]
@@ -288,7 +303,7 @@
          iteration 0]
     ;;(print-report assigns (:preferences board) (:cap board) iteration)
     (if (> iteration max-tries)
-      (throw (Exception. (format "Over %d iterations!" max-tries)))
+      (throw (ex-info (format "Over %d iterations!" max-tries) {}))
       (if (is-solved newboard)
         newboard
         (recur (move-step newboard) (inc iteration))))))
@@ -306,10 +321,13 @@
 (defn calculate-for-term
   "solve for a particular term"
   [modules preferences per-module term]
-  (let [mf (fn [m] (= (:term m) term))
-        pf (fn [p] (assoc p :modules (filter mf (:modules p))))
-        mt (filter mf modules)
+  (doseq [p preferences]
+    (println " " (-> p :student :name) (map :name (:modules p))))
+  (let [pf (fn [p] (assoc p :modules (modules-in-term (:modules p) term)))
+        mt (modules-in-term modules term)
         pt (map pf preferences)]
+    (doseq [p pt]
+      (println " " (-> p :student :name) (map :name (:modules p))))
     (solve (init-board-with-modules mt pt per-module))))
 
 (defn calculate-terms
