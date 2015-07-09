@@ -20,7 +20,10 @@
   [:title] (content title)
   [:.main] (content body))
 
-(defsnippet step1-t "module-assigner/step1.html" [:div.article] [] identity)
+(defsnippet step1-t "module-assigner/step1.html"
+  [:div.article]
+  []
+  [:.form-errors] nil)
 
 (defsnippet module-snippet "module-assigner/results.html" 
   [:#modules :tbody [:tr first-of-type]]
